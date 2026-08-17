@@ -1,0 +1,17 @@
+---
+description: Padrões de desenvolvimento Front-end com React, Vite e CSS Modules.
+globs: apps/web/**/*
+alwaysApply: false
+---
+
+# Regras de Front-end (`apps/web`)
+
+## Arquitetura e Componentes
+- Utilize Functional Components e Hooks do React.
+- Mantenha a separação de responsabilidades (UI vs. Lógica).
+- Para estilização, utilize exclusivamente CSS Modules (`.module.css`).
+
+## Dados e Requisições
+- Valide todos os formulários e entradas de dados usando a biblioteca Zod.
+- Para requisições HTTP, utilize a API nativa `fetch` chamando as rotas da nossa API (usando `import.meta.env.VITE_API_URL`).
+- Nunca chame o banco de dados (Supabase) diretamente do front-end.

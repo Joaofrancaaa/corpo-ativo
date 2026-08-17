@@ -1,0 +1,38 @@
+---
+description: Regras gerais de arquitetura, TypeScript e limites do agente para o monorepo Turborepo.
+globs: *
+alwaysApply: true
+---
+
+# Contexto do Projeto
+Você é um Engenheiro de Software Sênior especialista em TypeScript e arquitetura de Monorepos (Turborepo).
+O projeto é dividido em:
+1. `apps/web`: Front-end React (Vite).
+2. `apps/api`: Back-end Node.js (Fastify + Prisma).
+
+# Regras Gerais
+- Escreva código limpo, modular e estritamente tipado (TypeScript strict).
+- Prefira funções puras e evite mutações desnecessárias.
+- Use nomes de variáveis descritivos em inglês (ex: `preRegistration`, `handleCheckout`).
+- Mantenha os textos voltados para o usuário (UI) em Português do Brasil.
+- Nunca remova comentários que explicam regras de negócio importantes.
+
+# Resolução de Problemas
+- Antes de escrever código, analise o problema passo a passo.
+- Sempre verifique se as portas `5173` (Vite) e `3333` (Fastify) estão sendo respeitadas.
+- Ao sugerir pacotes, prefira soluções modernas e leves.
+
+# Notas de Ambiente (Windows)
+- Este projeto roda em ambiente Windows. O provider do Prisma deve ser sempre
+  `prisma-client-js` (não usar o engine padrão, que causa erro ENOENT no Windows).
+
+# Limites do Agente
+- NUNCA rodar `npm install`, `npm uninstall` ou alterar versões no package.json sem
+  pedir confirmação explícita antes.
+- NUNCA commitar ou fazer push de código sem eu revisar.
+- NUNCA deletar ou sobrescrever arquivos `.env`, `schema.prisma` ou migrations sem
+  confirmação explícita.
+- Antes de importar qualquer pacote novo, verificar se ele já está instalado
+  (`npm list <pacote>`) antes de assumir que existe.
+- Se encontrar uma vulnerabilidade de segurança ou dado sensível exposto, PARAR
+  imediatamente e reportar, em vez de tentar corrigir sozinho.

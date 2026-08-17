@@ -1,0 +1,14 @@
+# Placeholder — features serão criadas na próxima etapa
+#
+# Estrutura prevista (feature-based):
+# src/features/
+#   header/
+#   hero/
+#   modalities/
+#   pricing/
+#   checkout/
+#   footer/
+# src/interfaces/
+# src/services/
+# src/styles/
+# src/components/   (shared UI primitives locais até packages/ui existir)

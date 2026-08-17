@@ -1,0 +1,21 @@
+---
+description: Padrões de desenvolvimento Back-end com Node.js, Fastify e Prisma ORM.
+globs: apps/api/**/*
+alwaysApply: false
+---
+
+# Regras de Back-end (`apps/api`)
+
+## Arquitetura
+- Siga estritamente o padrão MSC (Model, Service/Controller, Routes).
+- Não deixe regras de negócio soltas no arquivo `server.ts`.
+- Rotas devem ser registradas como plugins do Fastify.
+
+## Banco de Dados (Prisma)
+- Nunca instancie o `PrismaClient` diretamente dentro de controllers ou rotas.
+- Importe a instância única (`Singleton`) sempre de `src/lib/prisma.ts`.
+
+## Validação e Erros
+- Utilize Fastify + Zod para validar o `request.body` antes de acionar a regra de negócio.
+- Trate proativamente os erros do Prisma.
+- Para violação de UNIQUE constraint (código Prisma `P2002`), devolva respostas HTTP 400 com mensagens em português claro para o front-end.

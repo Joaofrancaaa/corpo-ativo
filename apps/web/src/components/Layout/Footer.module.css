@@ -1,0 +1,137 @@
+.footer {
+  background: var(--bg-darker);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.container {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding:
+    2.5rem max(var(--page-padding-x), var(--safe-left))
+    calc(1.5rem + var(--safe-bottom)) max(var(--page-padding-x), var(--safe-right));
+}
+
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.logo {
+  font-size: clamp(1.125rem, 4.5vw, 1.25rem);
+  font-weight: 900;
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+}
+
+.logoLight {
+  color: var(--text-light);
+}
+
+.logoAccent {
+  color: var(--accent-orange);
+}
+
+.tagline {
+  font-size: clamp(0.875rem, 2.5vw, 0.9375rem);
+  font-style: normal;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.socialLink,
+.contactLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-style: normal;
+  text-decoration: none;
+  color: var(--accent-orange);
+  transition: color 0.2s ease;
+}
+
+.socialLink:hover,
+.contactLink:hover {
+  color: var(--accent-orange-hover);
+}
+
+.columnTitle {
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-light);
+}
+
+.address {
+  font-size: clamp(0.875rem, 2.5vw, 0.9375rem);
+  font-style: normal;
+  line-height: 1.65;
+  color: var(--text-muted);
+  overflow-wrap: break-word;
+}
+
+.copyright {
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: clamp(0.6875rem, 2vw, 0.75rem);
+  font-style: normal;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding-block: 3rem 2rem;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+  }
+
+  .copyright {
+    text-align: left;
+  }
+
+  .socialLink,
+  .contactLink {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 359px) {
+  .grid {
+    gap: 1.5rem;
+  }
+}
+
+.footerLogo {
+  height: 60px; /* Geralmente a logo do rodapé pode ser um pouco maior */
+  width: auto;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  /* ... suas outras regras de media query ... */
+
+  /* Você pode aumentar a logo um pouco no desktop se quiser */
+  .footerLogo {
+    width: 200px;
+  }
+}
+

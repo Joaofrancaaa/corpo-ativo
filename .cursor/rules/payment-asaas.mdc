@@ -1,0 +1,16 @@
+---
+description: Regras específicas para integração com gateway de pagamento (Asaas).
+globs: apps/api/src/**/payment*, apps/api/src/**/webhook*, apps/api/src/**/subscription*
+alwaysApply: false
+---
+
+# Integração de Pagamento (Asaas)
+- Endpoints de webhook devem ser idempotentes — o mesmo evento pode chegar mais de
+  uma vez, e processar duas vezes não pode duplicar cobrança nem duplicar status.
+- Nunca confiar apenas no corpo da requisição do webhook sem validar a origem.
+- Toda alteração de status de pagamento deve ser registrada com timestamp e evento
+  de origem, para permitir auditoria em caso de disputa com o aluno.
+- Chaves de API do gateway (Asaas) sempre via variável de ambiente, nunca hardcoded,
+  nunca logadas no console.
+- Ao gerar link de assinatura, sempre associar o `gateway_subscription_id` retornado
+  à tabela `subscriptions` antes de retornar sucesso ao front-end.

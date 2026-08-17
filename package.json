@@ -1,0 +1,25 @@
+{
+  "name": "corpo-ativo",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Monorepo Corpo Ativo — Landing Page (Fase 1) e sistema de matrículas (Fase 2)",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "dev:web": "npm run dev --workspace=@corpo-ativo/web"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.4",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "packageManager": "npm@10.9.2"
+}

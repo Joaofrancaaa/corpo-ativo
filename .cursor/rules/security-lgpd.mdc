@@ -1,0 +1,17 @@
+---
+description: Regras de segurança e proteção de dados sensíveis (LGPD).
+globs: apps/api/**/*
+alwaysApply: false
+---
+
+# Segurança e Dados Sensíveis
+- NUNCA armazenar número de cartão de crédito, CVV ou dados brutos de pagamento no banco.
+  Isso é responsabilidade exclusiva do gateway (Asaas) — armazenamos apenas IDs de referência.
+- CPF deve ser tratado como dado sensível: nunca logar em console, nunca retornar em
+  respostas de API que não sejam explicitamente para o próprio usuário dono do dado.
+- Toda tabela com dado pessoal precisa de campo de consentimento (`consent_lgpd`) rastreável,
+  com timestamp de quando foi aceito.
+- Endpoints de webhook (pagamento) devem validar a assinatura/origem da requisição antes
+  de processar qualquer dado.
+- Dados biométricos (se implementados no futuro) nunca devem ser armazenados diretamente —
+  apenas referências externas ao sistema do hardware (catraca).

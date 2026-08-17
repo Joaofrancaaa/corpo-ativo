@@ -1,0 +1,39 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "windows"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model PreRegistration {
+  id         String   @id @default(uuid()) @db.Uuid
+  name       String
+  email      String   @unique
+  whatsapp   String   @unique
+  plan_id    String
+  created_at DateTime @default(now()) @db.Timestamptz()
+
+  @@map("pre_registrations")
+}
+
+model Plan {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String
+  price        Float
+  billingCycle String
+  features     String[] // O Postgres suporta arrays nativamente!
+  isPopular    Boolean  @default(false)
+  active       Boolean  @default(true) // Para desativar planos antigos sem deletar
+  created_at   DateTime @default(now()) @db.Timestamptz()
+
+  @@map("plans")
+}
