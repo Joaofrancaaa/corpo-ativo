@@ -42,6 +42,8 @@ html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 body {
@@ -52,6 +54,7 @@ body {
   min-height: 100dvh;
   line-height: 1.5;
   overflow-x: hidden;
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -66,11 +69,13 @@ h3 {
   min-height: 100vh;
   min-height: 100dvh;
   overflow-x: hidden;
+  overflow-x: clip;
 }
 
 main {
   min-width: 0;
   overflow-x: hidden;
+  overflow-x: clip;
 }
 
 /* Compensa o header fixo ao navegar por âncoras */
@@ -112,6 +117,21 @@ input[type='submit'] {
   }
 }
 
+/* Scroll reveal: usa `translate` (não `transform`) para não conflitar com hover/scale */
+[data-reveal] {
+  opacity: 0;
+  translate: 0 1.5rem;
+  transition:
+    opacity 0.7s ease,
+    translate 0.7s ease;
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+[data-reveal].is-revealed {
+  opacity: 1;
+  translate: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -123,5 +143,10 @@ input[type='submit'] {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  [data-reveal] {
+    opacity: 1;
+    translate: 0;
   }
 }

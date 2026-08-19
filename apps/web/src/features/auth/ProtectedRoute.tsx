@@ -18,7 +18,7 @@ export default function ProtectedRoute({
 
   if (isLoading) {
     return (
-      <div className={styles.loading} role="status" aria-live="polite">
+      <div className={styles.loading} role="status" aria-live="polite" data-reveal>
         Carregando...
       </div>
     );

@@ -6,7 +6,7 @@ const WHATSAPP_URL = 'https://wa.me/5511999999999';
 export default function Footer() {
   return (
     <footer className={styles.footer}>
-      <div className={styles.container}>
+      <div className={styles.container} data-reveal>
         <div className={styles.grid}>
           <div className={styles.column}>
           <Logo className={styles.footerLogo} />

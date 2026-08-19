@@ -18,7 +18,8 @@ export default function HeroSection() {
         <span className={styles.eyebrow}>{HERO_COPY.eyebrow}</span>
 
         <h1 className={styles.title} id="hero-title">
-          {HERO_COPY.title}
+          {HERO_COPY.title}{' '}
+          <span className={styles.titleAccent}>{HERO_COPY.titleAccent}</span>
           <span className={styles.highlight}>{HERO_COPY.highlight}</span>
         </h1>
 

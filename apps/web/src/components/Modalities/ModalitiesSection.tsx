@@ -1,6 +1,7 @@
 // apps/web/src/components/Modalities/ModalitiesSection.tsx
 
 import { useEffect, useRef, useState, memo } from "react";
+import { getRevealDelayStyle } from "@/features/scrollReveal/useScrollReveal";
 import styles from "./ModalitiesSection.module.css";
 
 const MODALITIES = [
@@ -27,13 +28,16 @@ const MODALITIES = [
 ] as const;
 
 // Tipagem para as props do card
-type ModalityProps = (typeof MODALITIES)[number];
+type ModalityProps = (typeof MODALITIES)[number] & {
+  revealIndex: number;
+};
 
 // Componente do Card isolado e memorizado (evita re-renderizações desnecessárias)
 const ModalityCard = memo(function ModalityCard({
   title,
   description,
   videoSrc,
+  revealIndex,
 }: ModalityProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -72,7 +76,11 @@ const ModalityCard = memo(function ModalityCard({
   }, []);
 
   return (
-    <article className={styles.card}>
+    <article
+      className={styles.card}
+      data-reveal
+      style={getRevealDelayStyle(revealIndex)}
+    >
       <video
         ref={videoRef}
         className={styles.videoBackground}
@@ -104,7 +112,7 @@ export default function ModalitiesSection() {
       aria-labelledby="modalities-title"
     >
       <div className={styles.container}>
-        <header className={styles.header}>
+        <header className={styles.header} data-reveal>
           <p className={styles.eyebrow}>O que oferecemos</p>
           <h2 className={styles.title} id="modalities-title">
             Nossa Estrutura
@@ -112,8 +120,8 @@ export default function ModalitiesSection() {
         </header>
 
         <div className={styles.grid}>
-          {MODALITIES.map((modality) => (
-            <ModalityCard key={modality.id} {...modality} />
+          {MODALITIES.map((modality, index) => (
+            <ModalityCard key={modality.id} {...modality} revealIndex={index} />
           ))}
         </div>
       </div>

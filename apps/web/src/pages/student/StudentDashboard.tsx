@@ -8,7 +8,7 @@ export default function StudentDashboard() {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <div className={styles.headerInner}>
+        <div className={styles.headerInner} data-reveal>
           <div>
             <p className={styles.eyebrow}>Área do Aluno</p>
             <h1 className={styles.title}>Olá, {user?.name}</h1>
@@ -26,7 +26,7 @@ export default function StudentDashboard() {
       </header>
 
       <main className={styles.main}>
-        <section className={styles.card}>
+        <section className={styles.card} data-reveal>
           <h2 className={styles.cardTitle}>Seu treino</h2>
           <p className={styles.cardText}>
             Em breve você poderá acompanhar treinos, evolução e presença por aqui.

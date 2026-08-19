@@ -71,6 +71,11 @@
   color: var(--text-light);
   overflow-wrap: break-word;
   word-break: break-word;
+
+}
+
+.titleAccent {
+  color: var(--accent-orange);
 }
 
 .highlight {

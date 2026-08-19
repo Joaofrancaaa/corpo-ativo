@@ -1,8 +1,10 @@
 import type { Plan } from '@/interfaces/types';
+import { getRevealDelayStyle } from '@/features/scrollReveal/useScrollReveal';
 import styles from './PlanCard.module.css';
 
 interface PlanCardProps {
   plan: Plan;
+  revealIndex?: number;
   onSelect: (plan: Plan) => void;
 }
 
@@ -26,7 +28,7 @@ function getPriceSuffix(billingCycle: Plan['billingCycle']): string {
   return '/trimestre';
 }
 
-export default function PlanCard({ plan, onSelect }: PlanCardProps) {
+export default function PlanCard({ plan, revealIndex = 0, onSelect }: PlanCardProps) {
   const handleCtaClick = () => {
     onSelect(plan);
   };
@@ -34,6 +36,8 @@ export default function PlanCard({ plan, onSelect }: PlanCardProps) {
   return (
     <article
       className={`${styles.card} ${plan.isPopular ? styles.popular : ''}`}
+      data-reveal
+      style={getRevealDelayStyle(revealIndex)}
     >
       {plan.isPopular && (
         <span className={styles.badge}>Mais Vantajoso</span>

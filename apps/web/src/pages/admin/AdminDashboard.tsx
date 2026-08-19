@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/features/auth/AuthProvider";
 import type { PreRegistrationStatusFilter } from "@/features/auth/types";
+import { getRevealDelayStyle } from "@/features/scrollReveal/useScrollReveal";
 import {
   fetchAdminDashboard,
   fetchAdminPlans,
@@ -174,7 +175,7 @@ export default function AdminDashboard() {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <div className={styles.headerInner}>
+        <div className={styles.headerInner} data-reveal>
           <div>
             <p className={styles.eyebrow}>Painel Administrativo</p>
             <h1 className={styles.title}>Olá, {user?.name}</h1>
@@ -212,14 +213,18 @@ export default function AdminDashboard() {
               className={styles.grid}
               aria-label="Indicadores do dashboard"
             >
-              <article className={styles.card}>
+              <article className={styles.card} data-reveal>
                 <p className={styles.cardLabel}>Pré-matrículas</p>
                 <p className={styles.cardValue}>
                   {summary.preRegistrationsCount}
                 </p>
               </article>
 
-              <article className={styles.card}>
+              <article
+                className={styles.card}
+                data-reveal
+                style={getRevealDelayStyle(1)}
+              >
                 <p className={styles.cardLabel}>Planos ativos</p>
                 <p className={styles.cardValue}>{summary.activePlansCount}</p>
               </article>

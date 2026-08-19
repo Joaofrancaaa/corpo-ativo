@@ -77,7 +77,7 @@ export function PreRegistrationsSection({
   };
 
   return (
-    <section className={styles.section}>
+    <section className={styles.section} data-reveal>
       <div className={styles.sectionHeader}>
         <h2 className={styles.sectionTitle}>Pré-matrículas recentes</h2>
         <p className={styles.sectionSubtitle}>
@@ -255,7 +255,7 @@ export function PlansSection({
   onToggleActive,
 }: PlansSectionProps) {
   return (
-    <section className={styles.section}>
+    <section className={styles.section} data-reveal>
       <div className={styles.sectionHeader}>
         <h2 className={styles.sectionTitle}>Gestão de planos</h2>
         <p className={styles.sectionSubtitle}>

@@ -53,7 +53,7 @@ export default function PricingSection() {
       aria-labelledby="pricing-title"
     >
       <div className={styles.container}>
-        <header className={styles.header}>
+        <header className={styles.header} data-reveal>
           <p className={styles.eyebrow}>Planos e valores</p>
           <h2 className={styles.title} id="pricing-title">
             Escolha seu Plano
@@ -65,7 +65,7 @@ export default function PricingSection() {
         </header>
 
         {loading ? (
-          <div className={styles.loading} aria-busy="true" aria-live="polite">
+        <div className={styles.loading} data-reveal aria-busy="true" aria-live="polite">
             <div className={styles.skeletonBar} />
             <div className={styles.skeletonBarShort} />
             <p className={styles.loadingText}>Carregando planos...</p>
@@ -73,8 +73,13 @@ export default function PricingSection() {
         ) : (
           <div className={styles.grid}>
             {/* O sort() foi removido. Agora ele respeita a API. */}
-            {plans.map((plan) => (
-              <PlanCard key={plan.id} plan={plan} onSelect={handleSelectPlan} />
+            {plans.map((plan, index) => (
+              <PlanCard
+                key={plan.id}
+                plan={plan}
+                revealIndex={index}
+                onSelect={handleSelectPlan}
+              />
             ))}
           </div>
         )}
