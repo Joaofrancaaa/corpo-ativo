@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/features/auth/AuthProvider';
 import StudentLoginModal from '@/components/StudentArea/StudentLoginModal';
 import styles from './Header.module.css';
 import { Logo } from '../common/Logo';
@@ -9,6 +11,8 @@ const DELTA_THRESHOLD = 4;
 export default function Header() {
   const [isHidden, setIsHidden] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const { user, logout, getDashboardPath } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     let lastScrollY = window.scrollY;
@@ -41,6 +45,15 @@ export default function Header() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  const handleStudentAreaClick = () => {
+    if (user) {
+      navigate(getDashboardPath(user.role));
+      return;
+    }
+
+    setIsLoginOpen(true);
+  };
+
   return (
     <>
       <header
@@ -48,33 +61,52 @@ export default function Header() {
         aria-hidden={isHidden}
       >
         <div className={styles.inner}>
-          
-        <a href="/" className={styles.logoLink} aria-label="Ir para a página inicial">
-          <Logo className={styles.logo} />
-        </a>
+          <Link to="/" className={styles.logoLink} aria-label="Ir para a página inicial">
+            <Logo className={styles.logo} />
+          </Link>
+
           <div className={styles.actions}>
-            <button
-              type="button"
-              className={styles.studentButton}
-              onClick={() => setIsLoginOpen(true)}
-              aria-label="Área do Aluno"
-            >
-              <svg
-                className={styles.userIcon}
-                viewBox="0 0 24 24"
-                fill="none"
-                aria-hidden="true"
+            {user ? (
+              <div className={styles.userMenu}>
+                <button
+                  type="button"
+                  className={styles.studentButton}
+                  onClick={handleStudentAreaClick}
+                >
+                  <span className={styles.studentLabel}>{user.name}</span>
+                </button>
+                <button
+                  type="button"
+                  className={styles.logoutButton}
+                  onClick={logout}
+                >
+                  Sair
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                className={styles.studentButton}
+                onClick={() => setIsLoginOpen(true)}
+                aria-label="Área do Aluno"
               >
-                <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2" />
-                <path
-                  d="M4 20c0-3.314 3.582-6 8-6s8 2.686 8 6"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
-              <span className={styles.studentLabel}>Área do Aluno</span>
-            </button>
+                <svg
+                  className={styles.userIcon}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2" />
+                  <path
+                    d="M4 20c0-3.314 3.582-6 8-6s8 2.686 8 6"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <span className={styles.studentLabel}>Área do Aluno</span>
+              </button>
+            )}
 
             <a className={styles.cta} href="#planos">
               Assine Já
@@ -86,6 +118,10 @@ export default function Header() {
       <StudentLoginModal
         isOpen={isLoginOpen}
         onClose={() => setIsLoginOpen(false)}
+        onSuccess={(role) => {
+          setIsLoginOpen(false);
+          navigate(getDashboardPath(role));
+        }}
       />
     </>
   );

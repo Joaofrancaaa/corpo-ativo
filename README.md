@@ -34,3 +34,12 @@ corpo-ativo/
 ## Deploy (Vercel)
 
 O app `apps/web` está configurado para deploy estático na Vercel. Defina o **Root Directory** como `apps/web` no painel da Vercel, ou use o `vercel.json` na raiz do app.
+
+No painel da Vercel, configure `VITE_API_URL` apontando para a URL pública da API.
+
+## Variáveis de ambiente
+
+Veja `apps/api/.env.example` e `apps/web/.env.example`. Resumo:
+
+- **API** — banco, JWT, Asaas (segredos)
+- **Web** — apenas `VITE_API_URL` (pública no browser)

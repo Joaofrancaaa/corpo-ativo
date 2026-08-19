@@ -1,6 +1,7 @@
 import type { Plan, PreRegistrationUser } from "../interfaces/types";
+import { env } from "@/config/env";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3333/api";
+const API_URL = env.apiUrl;
 
 export const getPlans = async (): Promise<Plan[]> => {
   try {

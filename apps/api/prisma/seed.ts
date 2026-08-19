@@ -1,9 +1,18 @@
 // apps/api/prisma/seed.ts
-import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
+import { PrismaClient, UserRole } from "@prisma/client";
+import { env } from "../src/config/env";
 
 const prisma = new PrismaClient();
 
-async function main() {
+async function seedPlans() {
+  const existingPlans = await prisma.plan.count();
+
+  if (existingPlans > 0) {
+    console.log("Planos já existem, pulando seed de planos.");
+    return;
+  }
+
   await prisma.plan.createMany({
     data: [
       {
@@ -35,7 +44,43 @@ async function main() {
       },
     ],
   });
+
   console.log("Planos inseridos com sucesso!");
+}
+
+async function seedAdminUser() {
+  const adminCpf = env.seed.adminCpf;
+  const adminPassword = env.seed.adminPassword;
+  const adminName = env.seed.adminName;
+
+  const existingAdmin = await prisma.user.findUnique({
+    where: { cpf: adminCpf },
+  });
+
+  if (existingAdmin) {
+    console.log("Usuário admin já existe, pulando seed de admin.");
+    return;
+  }
+
+  const passwordHash = await bcrypt.hash(adminPassword, 10);
+
+  await prisma.user.create({
+    data: {
+      name: adminName,
+      cpf: adminCpf,
+      password_hash: passwordHash,
+      role: UserRole.ADMIN,
+      consent_lgpd: true,
+      consent_at: new Date(),
+    },
+  });
+
+  console.log("Usuário admin criado com sucesso!");
+}
+
+async function main() {
+  await seedPlans();
+  await seedAdminUser();
 }
 
 main()

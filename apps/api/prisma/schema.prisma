@@ -1,26 +1,32 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "windows"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
+// 1. STATUS DE LEAD (Substitui o antigo payment_status)
+enum PreRegistrationStatus {
+  PENDING   // Aguardando conversão
+  CONVERTED // Já virou aluno oficial
+  CANCELLED // Desistiu
+}
+
 model PreRegistration {
-  id         String   @id @default(uuid()) @db.Uuid
+  id         String                @id @default(uuid()) @db.Uuid
   name       String
-  email      String   @unique
-  whatsapp   String   @unique
+  email      String                @unique
+  whatsapp   String                @unique
   plan_id    String
-  created_at DateTime @default(now()) @db.Timestamptz()
+  status     PreRegistrationStatus @default(PENDING)
+  created_at DateTime              @default(now()) @db.Timestamptz()
+
+  // Permite saber qual User nasceu desta pré-matrícula
+  user       User?
 
   @@map("pre_registrations")
 }
@@ -30,10 +36,102 @@ model Plan {
   name         String
   price        Float
   billingCycle String
-  features     String[] // O Postgres suporta arrays nativamente!
+  features     String[] 
   isPopular    Boolean  @default(false)
-  active       Boolean  @default(true) // Para desativar planos antigos sem deletar
+  active       Boolean  @default(true) 
   created_at   DateTime @default(now()) @db.Timestamptz()
 
+  subscriptions Subscription[]
+
   @@map("plans")
+}
+
+enum UserRole {
+  STUDENT
+  ADMIN
+}
+
+model User {
+  id            String    @id @default(uuid()) @db.Uuid
+  name          String
+  cpf           String    @unique
+  email         String?   @unique // Adicionado para fechar o cadastro
+  whatsapp      String?   @unique // Adicionado para notificações
+  password_hash String
+  role          UserRole  @default(STUDENT)
+  consent_lgpd  Boolean   @default(false)
+  consent_at    DateTime? @db.Timestamptz()
+
+  // Chave Estrangeira apontando de onde esse usuário veio
+  pre_registration_id String?          @unique @db.Uuid
+  pre_registration    PreRegistration? @relation(fields: [pre_registration_id], references: [id])
+
+  created_at    DateTime  @default(now()) @db.Timestamptz()
+
+  subscriptions Subscription[]
+
+  @@map("users")
+}
+
+// 2. ASSINATURAS (A Ligação entre o Aluno e o Plano)
+enum SubscriptionStatus {
+  ACTIVE
+  INACTIVE
+  OVERDUE  // Inadimplente
+  CANCELED
+}
+
+model Subscription {
+  id         String             @id @default(uuid()) @db.Uuid
+  user_id    String             @db.Uuid
+  plan_id    String             @db.Uuid
+  status     SubscriptionStatus @default(INACTIVE)
+  start_date DateTime           @default(now()) @db.Timestamptz()
+  end_date   DateTime?          @db.Timestamptz()
+
+  user       User      @relation(fields: [user_id], references: [id])
+  plan       Plan      @relation(fields: [plan_id], references: [id])
+  payments   Payment[]
+
+  @@map("subscriptions")
+}
+
+// 3. PAGAMENTOS (Aonde o Gateway de Pagamento vai se plugar)
+enum PaymentMethod {
+  // Pagamentos Físicos (Feitos na Recepção e registrados no painel)
+  CASH               // Dinheiro em espécie
+  POS_CREDIT_CARD    // Maquininha - Crédito
+  POS_DEBIT_CARD     // Maquininha - Débito
+  MANUAL_PIX         // Pix feito direto na conta da academia (QR Code de balcão)
+
+  // Pagamentos Online (Processados e criados automaticamente pelo Asaas)
+  CREDIT_CARD        // Cartão online
+  PIX                // Pix via Gateway
+  BOLETO             // Boleto Bancário
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+model Payment {
+  id               String        @id @default(uuid()) @db.Uuid
+  subscription_id  String        @db.Uuid
+  amount           Float
+  method           PaymentMethod @default(CASH)
+  status           PaymentStatus @default(PENDING)
+  due_date         DateTime      @db.Timestamptz()
+  paid_at          DateTime?     @db.Timestamptz()
+  
+  // Campo de ouro para a Fase 3: ID do pagamento no Asaas
+  asaas_payment_id String?       @unique 
+
+  subscription     Subscription  @relation(fields: [subscription_id], references: [id])
+
+  created_at       DateTime      @default(now()) @db.Timestamptz()
+
+  @@map("payments")
 }

@@ -9,6 +9,29 @@ Placeholder para a API Node.js com **Fastify**.
 - Integração com gateway de pagamentos recorrentes
 - Painel administrativo (endpoints REST)
 
+## Variáveis de ambiente
+
+Cada app do monorepo tem seu próprio `.env` (nunca versionado) e um `.env.example` (versionado como referência).
+
+| App | Arquivo | O que configurar |
+|-----|---------|------------------|
+| `apps/api` | `.env` | Banco, JWT, Asaas, seed do admin |
+| `apps/web` | `.env` | URL da API (`VITE_API_URL`) |
+
+### Setup rápido
+
+```bash
+# API
+cp apps/api/.env.example apps/api/.env
+
+# Web
+cp apps/web/.env.example apps/web/.env
+```
+
+Depois preencha `DATABASE_URL`, `DIRECT_URL` e `JWT_SECRET` em `apps/api/.env`.
+
+> **Regra:** segredos ficam só no back-end. No front-end, use apenas variáveis com prefixo `VITE_`.
+
 ## Próximos passos
 
 1. Inicializar `package.json` com Fastify + TypeScript

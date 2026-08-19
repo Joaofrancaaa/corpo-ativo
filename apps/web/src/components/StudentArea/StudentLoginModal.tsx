@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
+import { useAuth } from '@/features/auth/AuthProvider';
+import type { UserRole } from '@/features/auth/types';
+import { loginSchema } from '@/schemas/loginSchema';
 import styles from './StudentLoginModal.module.css';
 
 interface StudentLoginModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess: (role: UserRole) => void;
 }
 
 type LoginStatus = 'idle' | 'loading';
@@ -12,10 +16,13 @@ type LoginStatus = 'idle' | 'loading';
 export default function StudentLoginModal({
   isOpen,
   onClose,
+  onSuccess,
 }: StudentLoginModalProps) {
+  const { login } = useAuth();
   const [cpf, setCpf] = useState('');
   const [password, setPassword] = useState('');
   const [status, setStatus] = useState<LoginStatus>('idle');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isAnimatedIn, setIsAnimatedIn] = useState(false);
 
   useEffect(() => {
@@ -26,6 +33,7 @@ export default function StudentLoginModal({
     setCpf('');
     setPassword('');
     setStatus('idle');
+    setErrorMessage(null);
     setIsAnimatedIn(false);
 
     const frameId = requestAnimationFrame(() => {
@@ -50,15 +58,29 @@ export default function StudentLoginModal({
     }
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setErrorMessage(null);
+
+    const parsed = loginSchema.safeParse({ cpf, password });
+
+    if (!parsed.success) {
+      setErrorMessage(parsed.error.issues[0]?.message ?? 'Dados inválidos');
+      return;
+    }
+
     setStatus('loading');
 
-    window.setTimeout(() => {
+    try {
+      const user = await login(parsed.data.cpf, parsed.data.password);
       setStatus('idle');
-      onClose();
-      window.alert('Funcionalidade de Dashboard disponível na Fase 2');
-    }, 1000);
+      onSuccess(user.role);
+    } catch (error) {
+      setStatus('idle');
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Não foi possível entrar.',
+      );
+    }
   };
 
   return (
@@ -126,6 +148,12 @@ export default function StudentLoginModal({
               disabled={status === 'loading'}
             />
           </label>
+
+          {errorMessage && (
+            <p className={styles.error} role="alert">
+              {errorMessage}
+            </p>
+          )}
 
           <button
             type="submit"

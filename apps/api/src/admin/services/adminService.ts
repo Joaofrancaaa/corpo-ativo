@@ -1,0 +1,220 @@
+import {
+  PreRegistrationStatus,
+  Prisma,
+  PaymentMethod,
+  SubscriptionStatus,
+  UserRole,
+} from "@prisma/client";
+
+import { prisma } from "../../lib/prisma";
+import bcrypt from "bcryptjs";
+
+export async function convertPreRegistration(
+  preRegistrationId: string,
+  method: PaymentMethod,
+) {
+  // 1. Busca os dados originais
+  const preRegistration = await prisma.preRegistration.findUnique({
+    where: { id: preRegistrationId },
+  });
+
+  if (!preRegistration) throw new Error("Lead não encontrado.");
+  if (preRegistration.status === "CONVERTED")
+    throw new Error("Lead já foi convertido.");
+
+  const plan = await prisma.plan.findUnique({
+    where: { id: preRegistration.plan_id },
+  });
+
+  if (!plan) throw new Error("Plano não encontrado.");
+
+  // O Prisma faz uma TRANSAÇÃO (ou cria tudo, ou cancela tudo se der erro)
+  const result = await prisma.$transaction(async (tx) => {
+    // 2. Cria o Usuário Oficial (Senha temporária: CPF dele)
+    const defaultPassword = await bcrypt.hash(preRegistration.whatsapp, 10);
+
+    const newUser = await tx.user.create({
+      data: {
+        name: preRegistration.name,
+        email: preRegistration.email,
+        whatsapp: preRegistration.whatsapp,
+        cpf: preRegistration.whatsapp, // <- Temporário até ele preencher o perfil
+        password_hash: defaultPassword,
+        role: UserRole.STUDENT,
+        pre_registration_id: preRegistration.id,
+      },
+    });
+
+    // 3. Cria a Assinatura
+    const newSubscription = await tx.subscription.create({
+      data: {
+        user_id: newUser.id,
+        plan_id: plan.id,
+        status: SubscriptionStatus.ACTIVE,
+      },
+    });
+
+    // 4. Cria o Registro Financeiro
+    await tx.payment.create({
+      data: {
+        subscription_id: newSubscription.id,
+        amount: plan.price,
+        method: method, // <- Aqui entra o CASH, POS_CREDIT_CARD, etc
+        status: "PAID",
+        paid_at: new Date(),
+        due_date: new Date(),
+      },
+    });
+
+    // 5. Atualiza o status do Lead original
+    await tx.preRegistration.update({
+      where: { id: preRegistration.id },
+      data: { status: "CONVERTED" },
+    });
+
+    return newUser;
+  });
+
+  return result;
+}
+// 1. Atualizamos os filtros para refletir o status do Lead (e não mais pagamento)
+export type PreRegistrationStatusFilter =
+  | "all"
+  | "pending"
+  | "converted"
+  | "cancelled";
+
+export interface ListPreRegistrationsFilters {
+  search?: string;
+  status?: PreRegistrationStatusFilter;
+}
+
+export async function getDashboardSummary() {
+  const [preRegistrationsCount, activePlansCount] = await Promise.all([
+    prisma.preRegistration.count(),
+    prisma.plan.count({ where: { active: true } }),
+  ]);
+
+  return {
+    preRegistrationsCount,
+    activePlansCount,
+  };
+}
+
+export interface AdminPreRegistrationItem {
+  id: string;
+  name: string;
+  email: string;
+  whatsapp: string;
+  planName: string;
+  // 2. O front-end agora vai receber o status correto do Prisma
+  status: "PENDING" | "CONVERTED" | "CANCELLED";
+  createdAt: string;
+}
+
+function buildPreRegistrationWhere(
+  filters?: ListPreRegistrationsFilters,
+): Prisma.PreRegistrationWhereInput {
+  const where: Prisma.PreRegistrationWhereInput = {};
+
+  console.log("Filtro recebido na API:", filters?.status);
+
+  // 3. Atualizamos a montagem do filtro para usar a nova coluna "status"
+  if (filters?.status && filters.status !== "all") {
+    // Nós mapeamos a string minúscula para o Enum maiúsculo do Prisma
+    if (filters.status === "pending") where.status = "PENDING";
+    if (filters.status === "converted") where.status = "CONVERTED";
+    if (filters.status === "cancelled") where.status = "CANCELLED";
+  }
+
+  const searchTerm = filters?.search?.trim();
+  if (searchTerm) {
+    where.OR = [
+      { name: { contains: searchTerm, mode: "insensitive" } },
+      { email: { contains: searchTerm, mode: "insensitive" } },
+      { whatsapp: { contains: searchTerm, mode: "insensitive" } },
+    ];
+  }
+
+  return where;
+}
+
+export async function listPreRegistrations(
+  filters?: ListPreRegistrationsFilters,
+): Promise<AdminPreRegistrationItem[]> {
+  const where = buildPreRegistrationWhere(filters);
+
+  const [preRegistrations, plans] = await Promise.all([
+    prisma.preRegistration.findMany({
+      where,
+      orderBy: { created_at: "desc" },
+    }),
+    prisma.plan.findMany({
+      select: { id: true, name: true },
+    }),
+  ]);
+
+  const planNameById = new Map(plans.map((plan) => [plan.id, plan.name]));
+
+  return preRegistrations.map((registration) => ({
+    id: registration.id,
+    name: registration.name,
+    email: registration.email,
+    whatsapp: registration.whatsapp,
+    planName: planNameById.get(registration.plan_id) ?? "Plano removido",
+    // 4. Mapeamos a coluna status em vez da antiga payment_status
+    status: registration.status,
+    createdAt: registration.created_at.toISOString(),
+  }));
+}
+
+export interface AdminPlanItem {
+  id: string;
+  name: string;
+  price: number;
+  billingCycle: string;
+  features: string[];
+  isPopular: boolean;
+  active: boolean;
+}
+
+export async function listAllPlans(): Promise<AdminPlanItem[]> {
+  const plans = await prisma.plan.findMany({
+    orderBy: [{ active: "desc" }, { price: "desc" }],
+  });
+
+  return plans.map((plan) => ({
+    id: plan.id,
+    name: plan.name,
+    price: plan.price,
+    billingCycle: plan.billingCycle,
+    features: plan.features,
+    isPopular: plan.isPopular,
+    active: plan.active,
+  }));
+}
+
+export async function togglePlanActive(planId: string): Promise<AdminPlanItem> {
+  const existingPlan = await prisma.plan.findUnique({
+    where: { id: planId },
+  });
+
+  if (!existingPlan) {
+    throw new Error("PLAN_NOT_FOUND");
+  }
+
+  const updatedPlan = await prisma.plan.update({
+    where: { id: planId },
+    data: { active: !existingPlan.active },
+  });
+
+  return {
+    id: updatedPlan.id,
+    name: updatedPlan.name,
+    price: updatedPlan.price,
+    billingCycle: updatedPlan.billingCycle,
+    features: updatedPlan.features,
+    isPopular: updatedPlan.isPopular,
+    active: updatedPlan.active,
+  };
+}

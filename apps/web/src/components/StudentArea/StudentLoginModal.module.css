@@ -187,6 +187,13 @@
   cursor: not-allowed;
 }
 
+.error {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: #fca5a5;
+}
+
 @media (min-width: 768px) {
   .overlay {
     align-items: center;
