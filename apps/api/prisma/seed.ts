@@ -5,48 +5,48 @@ import { env } from "../src/config/env";
 
 const prisma = new PrismaClient();
 
-async function seedPlans() {
-  const existingPlans = await prisma.plan.count();
+// async function seedPlans() {
+//   const existingPlans = await prisma.plan.count();
 
-  if (existingPlans > 0) {
-    console.log("Planos já existem, pulando seed de planos.");
-    return;
-  }
+//   if (existingPlans > 0) {
+//     console.log("Planos já existem, pulando seed de planos.");
+//     return;
+//   }
 
-  await prisma.plan.createMany({
-    data: [
-      {
-        name: "Mensal",
-        price: 119.9,
-        billingCycle: "monthly",
-        features: ["Acesso livre", "Musculação", "Aulas coletivas"],
-        isPopular: false,
-      },
-      {
-        name: "Anual",
-        price: 89.9,
-        billingCycle: "yearly",
-        features: [
-          "Acesso livre",
-          "Musculação",
-          "Aulas coletivas",
-          "Sem taxa de adesão",
-          "Convide 1 amigo por mês",
-        ],
-        isPopular: true,
-      },
-      {
-        name: "Trimestral",
-        price: 109.9,
-        billingCycle: "quarterly",
-        features: ["Acesso livre", "Musculação", "Aulas coletivas"],
-        isPopular: false,
-      },
-    ],
-  });
+//   await prisma.plan.createMany({
+//     data: [
+//       {
+//         name: "Mensal",
+//         price: 119.9,
+//         billingCycle: "monthly",
+//         features: ["Acesso livre", "Musculação", "Aulas coletivas"],
+//         isPopular: false,
+//       },
+//       {
+//         name: "Anual",
+//         price: 89.9,
+//         billingCycle: "yearly",
+//         features: [
+//           "Acesso livre",
+//           "Musculação",
+//           "Aulas coletivas",
+//           "Sem taxa de adesão",
+//           "Convide 1 amigo por mês",
+//         ],
+//         isPopular: true,
+//       },
+//       {
+//         name: "Trimestral",
+//         price: 109.9,
+//         billingCycle: "quarterly",
+//         features: ["Acesso livre", "Musculação", "Aulas coletivas"],
+//         isPopular: false,
+//       },
+//     ],
+//   });
 
-  console.log("Planos inseridos com sucesso!");
-}
+//   console.log("Planos inseridos com sucesso!");
+// }
 
 async function seedAdminUser() {
   const adminCpf = env.seed.adminCpf;
@@ -79,7 +79,7 @@ async function seedAdminUser() {
 }
 
 async function main() {
-  await seedPlans();
+  //await seedPlans();
   await seedAdminUser();
 }
 

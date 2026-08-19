@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import type {
   AdminPreRegistrationItem,
   PreRegistrationStatusFilter,
@@ -43,7 +43,12 @@ interface PreRegistrationsSectionProps {
   onSearchChange: (value: string) => void;
   onStatusFilterChange: (value: PreRegistrationStatusFilter) => void;
   // Propriedade para a função de conversão
-  onConvertLead: (id: string, paymentMethod: string) => Promise<void>;
+  onConvertLead: (
+    id: string,
+    paymentMethod: string,
+    cpf: string,
+    birthDate: string,
+  ) => Promise<void>;
 }
 
 export function PreRegistrationsSection({
@@ -62,13 +67,27 @@ export function PreRegistrationsSection({
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [selectedMethod, setSelectedMethod] = useState<string>("CASH");
   const [isConverting, setIsConverting] = useState(false);
+  const [cpf, setCpf] = useState<string>(""); // <- Novo
+  const [birthDate, setBirthDate] = useState<string>(""); // <- Novo
 
   const handleConfirmConversion = async () => {
     if (!selectedLeadId) return;
+    if (!cpf || cpf.replace(/\D/g, "").length !== 11) {
+      alert("Por favor, digite um CPF válido com 11 números.");
+      return;
+    }
+    if (!birthDate) {
+      alert("Por favor, selecione a data de nascimento.");
+      return;
+    }
+
     setIsConverting(true);
     try {
-      await onConvertLead(selectedLeadId, selectedMethod);
+      // Agora enviamos todos os dados!
+      await onConvertLead(selectedLeadId, selectedMethod, cpf, birthDate);
       setSelectedLeadId(null);
+      setCpf(""); // Limpa o form após sucesso
+      setBirthDate(""); // Limpa o form após sucesso
     } catch (error) {
       alert(error instanceof Error ? error.message : "Erro na conversão.");
     } finally {
@@ -190,31 +209,79 @@ export function PreRegistrationsSection({
       {selectedLeadId && (
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
-            <h3>Como o aluno realizou o pagamento?</h3>
+            <h3>Efetivar Matrícula do Aluno</h3>
             <p>
-              Isto registrará o pagamento inicial, criará a conta do aluno e
-              ativará a assinatura no sistema.
+              Preencha os dados obrigatórios para criar o contrato e liberar o
+              acesso.
             </p>
 
-            <select
-              value={selectedMethod}
-              onChange={(e) => setSelectedMethod(e.target.value)}
-              className={styles.filterSelect}
-            >
-              <option value="CASH">Dinheiro em Espécie (Recepção)</option>
-              <option value="POS_CREDIT_CARD">
-                Maquininha - Cartão de Crédito
-              </option>
-              <option value="POS_DEBIT_CARD">
-                Maquininha - Cartão de Débito
-              </option>
-              <option value="MANUAL_PIX">Pix na Recepção (QR Code)</option>
-            </select>
+            <div className={styles.formGroup}>
+              {/* CAMPO CPF */}
+              <label className={styles.inputWrapper}>
+                <span className={styles.filterLabel}>
+                  CPF (Somente números) *
+                </span>
+                <input
+                  type="text"
+                  inputMode="numeric" /* Força o teclado numérico no celular */
+                  pattern="\d*"
+                  maxLength={11} /* Trava em 11 dígitos */
+                  className={styles.searchInput}
+                  placeholder="Apenas os 11 números"
+                  value={cpf}
+                  onChange={(e) => {
+                    // Remove qualquer coisa que não seja número (impede letras e pontos)
+                    const onlyNumbers = e.target.value.replace(/\D/g, "");
+                    setCpf(onlyNumbers);
+                  }}
+                />
+              </label>
+
+              {/* CAMPO DATA DE NASCIMENTO */}
+              <label className={styles.inputWrapper}>
+                <span className={styles.filterLabel}>Data de Nascimento *</span>
+                {/* 
+                  O type="date" garante o calendário no mobile/desktop. 
+                  Visualmente ele mostrará DD/MM/AAAA para usuários no Brasil.
+                */}
+                <input
+                  type="date"
+                  className={styles.searchInput}
+                  value={birthDate}
+                  onChange={(e) => setBirthDate(e.target.value)}
+                />
+              </label>
+
+              {/* CAMPO FORMA DE PAGAMENTO */}
+              <label className={styles.inputWrapper}>
+                <span className={styles.filterLabel}>
+                  Forma de Pagamento Inicial *
+                </span>
+                <select
+                  value={selectedMethod}
+                  onChange={(e) => setSelectedMethod(e.target.value)}
+                  className={styles.filterSelect}
+                >
+                  <option value="CASH">Dinheiro em Espécie (Recepção)</option>
+                  <option value="POS_CREDIT_CARD">
+                    Maquininha - Cartão de Crédito
+                  </option>
+                  <option value="POS_DEBIT_CARD">
+                    Maquininha - Cartão de Débito
+                  </option>
+                  <option value="MANUAL_PIX">Pix na Recepção (QR Code)</option>
+                </select>
+              </label>
+            </div>
 
             <div className={styles.modalActions}>
               <button
                 className={styles.cancelButton}
-                onClick={() => setSelectedLeadId(null)}
+                onClick={() => {
+                  setSelectedLeadId(null);
+                  setCpf("");
+                  setBirthDate("");
+                }}
                 disabled={isConverting}
               >
                 Cancelar

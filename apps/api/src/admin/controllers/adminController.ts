@@ -9,9 +9,14 @@ import {
 } from "../services/adminService";
 
 import { PaymentMethod } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
 const convertSchema = z.object({
   method: z.nativeEnum(PaymentMethod),
+  cpf: z.string().min(11, "CPF inválido").max(14), // Permite com ou sem pontuação
+  birthDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Data deve estar no formato YYYY-MM-DD"),
 });
 
 export async function postConvertPreRegistration(
@@ -19,9 +24,11 @@ export async function postConvertPreRegistration(
   reply: FastifyReply,
 ) {
   const { id } = request.params as { id: string };
+  console.log("Recebido do Front-end:", request.body);
   const parsedBody = convertSchema.safeParse(request.body);
 
   if (!parsedBody.success) {
+    console.error("Erro do Zod:", parsedBody.error.format());
     return reply.status(400).send({
       success: false,
       message: "Método de pagamento inválido.",
@@ -29,34 +36,79 @@ export async function postConvertPreRegistration(
   }
 
   try {
-    const newUser = await convertPreRegistration(id, parsedBody.data.method);
+    // Removemos a pontuação do CPF (se vier) para guardar limpo no banco
+    const cleanCpf = parsedBody.data.cpf.replace(/\D/g, "");
+
+    const newUser = await convertPreRegistration(
+      id,
+      parsedBody.data.method,
+      cleanCpf,
+      parsedBody.data.birthDate,
+    );
 
     return reply.status(201).send({
       success: true,
       data: {
         userId: newUser.id,
-        message: "Pré-matrícula convertida em Aluno Oficial com sucesso!",
+        message:
+          "Pré-matrícula convertida! Senha inicial: 6 primeiros dígitos do CPF.",
       },
     });
   } catch (error) {
-    if (error instanceof Error && error.message === "Lead não encontrado.") {
-      return reply.status(404).send({
-        success: false,
-        message: error.message,
-      });
-    }
+    if (error instanceof Error) {
+      if (
+        error.message === "Lead não encontrado." ||
+        error.message === "Lead já foi convertido." ||
+        error.message === "Plano não encontrado."
+      ) {
+        return reply
+          .status(404)
+          .send({ success: false, message: error.message });
+      }
 
-    if (error instanceof Error && error.message === "Lead já foi convertido.") {
-      return reply.status(400).send({
-        success: false,
-        message: error.message,
-      });
+      if (error.message === "Este CPF já está cadastrado no sistema.") {
+        return reply
+          .status(409)
+          .send({ success: false, message: error.message });
+      }
     }
+    
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      // O código P2002 significa "Unique constraint failed"
+      if (error.code === "P2002") {
+        const target = (error.meta?.target as string[]) || [];
 
+        if (target.includes("cpf")) {
+          return reply.status(409).send({
+            success: false,
+            message: "Atenção: Este CPF já está matriculado no sistema!",
+          });
+        }
+        if (target.includes("email")) {
+          return reply.status(409).send({
+            success: false,
+            message:
+              "Atenção: Este E-mail já está sendo usado por outro aluno.",
+          });
+        }
+        if (target.includes("whatsapp")) {
+          return reply.status(409).send({
+            success: false,
+            message: "Atenção: Este WhatsApp já está associado a outro aluno.",
+          });
+        }
+
+        // Fallback genérico para duplicação
+        return reply.status(409).send({
+          success: false,
+          message: "Já existe um registro com esses dados no sistema.",
+        });
+      }
+    }
     request.log.error(error);
     return reply.status(500).send({
       success: false,
-      message: "Erro interno ao converter pré-matrícula.",
+      message: "Erro interno no servidor ao tentar efetivar a matrícula.",
     });
   }
 }

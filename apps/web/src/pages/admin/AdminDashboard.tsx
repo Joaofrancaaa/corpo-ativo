@@ -51,17 +51,28 @@ export default function AdminDashboard() {
     setPlans(planItems);
   }, []);
 
-  const handleConvertLead = async (leadId: string, paymentMethod: string) => {
+  const handleConvertLead = async (
+    leadId: string,
+    paymentMethod: string,
+    cpf: string,
+    birthDate: string,
+  ) => {
     if (!token) return;
 
     // Chama a API para converter
-    await convertAdminPreRegistration(token, leadId, paymentMethod as any);
+    await convertAdminPreRegistration(
+      token,
+      leadId,
+      paymentMethod as any,
+      cpf,
+      birthDate,
+    );
 
     // Se deu certo, recarrega a tabela e os indicadores (Dashboard Summary)
     await loadPreRegistrations(token);
     await loadDashboard(token);
   };
-  
+
   const loadPreRegistrations = useCallback(
     async (authToken: string) => {
       setIsSearchingPreRegistrations(true);

@@ -172,6 +172,8 @@ export async function convertAdminPreRegistration(
   token: string,
   preRegistrationId: string,
   paymentMethod: "CASH" | "POS_CREDIT_CARD" | "POS_DEBIT_CARD" | "MANUAL_PIX",
+  cpf: string,
+  birthDate: string,
 ): Promise<{ success: boolean; message: string }> {
   const response = await fetch(
     `${env.apiUrl}/admin/pre-registrations/${preRegistrationId}/convert`,
@@ -181,13 +183,19 @@ export async function convertAdminPreRegistration(
         "Content-Type": "application/json",
         ...authHeaders(token),
       },
-      body: JSON.stringify({ method: paymentMethod }),
+      // Agora enviamos o corpo da requisição completo (exatamente como o Zod espera)
+      body: JSON.stringify({
+        method: paymentMethod,
+        cpf: cpf,
+        birthDate: birthDate,
+      }),
     },
   );
 
   const data = await response.json();
 
   if (!response.ok) {
+    // Se o Zod falhar, ele manda uma mensagem clara agora
     throw new Error(data.message || "Erro ao converter a pré-matrícula.");
   }
 

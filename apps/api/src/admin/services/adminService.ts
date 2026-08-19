@@ -10,17 +10,18 @@ import { prisma } from "../../lib/prisma";
 import bcrypt from "bcryptjs";
 
 export async function convertPreRegistration(
-  preRegistrationId: string,
+  preRegistrationId: string, 
   method: PaymentMethod,
+  cpf: string,
+  birthDate: string // Formato YYYY-MM-DD
 ) {
-  // 1. Busca os dados originais
+  // 1. Busca os dados originais do Lead
   const preRegistration = await prisma.preRegistration.findUnique({
     where: { id: preRegistrationId },
   });
 
   if (!preRegistration) throw new Error("Lead não encontrado.");
-  if (preRegistration.status === "CONVERTED")
-    throw new Error("Lead já foi convertido.");
+  if (preRegistration.status === "CONVERTED") throw new Error("Lead já foi convertido.");
 
   const plan = await prisma.plan.findUnique({
     where: { id: preRegistration.plan_id },
@@ -28,45 +29,54 @@ export async function convertPreRegistration(
 
   if (!plan) throw new Error("Plano não encontrado.");
 
-  // O Prisma faz uma TRANSAÇÃO (ou cria tudo, ou cancela tudo se der erro)
-  const result = await prisma.$transaction(async (tx) => {
-    // 2. Cria o Usuário Oficial (Senha temporária: CPF dele)
-    const defaultPassword = await bcrypt.hash(preRegistration.whatsapp, 10);
+  // Verifica se o CPF já existe no banco (para evitar alunos duplicados)
+  const existingUser = await prisma.user.findUnique({ where: { cpf } });
+  if (existingUser) throw new Error("Este CPF já está cadastrado no sistema.");
 
+  const result = await prisma.$transaction(async (tx) => {
+    // 2. Senha temporária: Os 6 primeiros dígitos do CPF
+    const rawPassword = cpf.substring(0, 6);
+    const passwordHash = await bcrypt.hash(rawPassword, 10);
+    
+    // Converte a string de data (YYYY-MM-DD) para um objeto Date do Prisma
+    const dob = new Date(birthDate);
+
+    // 3. Cria o Usuário Oficial
     const newUser = await tx.user.create({
       data: {
         name: preRegistration.name,
         email: preRegistration.email,
         whatsapp: preRegistration.whatsapp,
-        cpf: preRegistration.whatsapp, // <- Temporário até ele preencher o perfil
-        password_hash: defaultPassword,
+        cpf: cpf, 
+        birth_date: dob,
+        password_hash: passwordHash,
         role: UserRole.STUDENT,
         pre_registration_id: preRegistration.id,
       },
     });
 
-    // 3. Cria a Assinatura
+    // 4. Cria a Assinatura vinculada ao Plano
     const newSubscription = await tx.subscription.create({
       data: {
         user_id: newUser.id,
         plan_id: plan.id,
         status: SubscriptionStatus.ACTIVE,
-      },
+      }
     });
 
-    // 4. Cria o Registro Financeiro
+    // 5. Registra o Pagamento Inicial (O Asaas vai se plugar no futuro aqui)
     await tx.payment.create({
       data: {
         subscription_id: newSubscription.id,
         amount: plan.price,
-        method: method, // <- Aqui entra o CASH, POS_CREDIT_CARD, etc
+        method: method, 
         status: "PAID",
         paid_at: new Date(),
         due_date: new Date(),
-      },
+      }
     });
 
-    // 5. Atualiza o status do Lead original
+    // 6. Altera o Status do Lead para "Convertido" para sumir dos pendentes
     await tx.preRegistration.update({
       where: { id: preRegistration.id },
       data: { status: "CONVERTED" },

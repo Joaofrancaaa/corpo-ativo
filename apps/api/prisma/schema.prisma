@@ -55,6 +55,7 @@ model User {
   id            String    @id @default(uuid()) @db.Uuid
   name          String
   cpf           String    @unique
+  birth_date    DateTime? @db.Date
   email         String?   @unique // Adicionado para fechar o cadastro
   whatsapp      String?   @unique // Adicionado para notificações
   password_hash String
@@ -64,7 +65,7 @@ model User {
 
   // Chave Estrangeira apontando de onde esse usuário veio
   pre_registration_id String?          @unique @db.Uuid
-  pre_registration    PreRegistration? @relation(fields: [pre_registration_id], references: [id])
+  pre_registration    PreRegistration? @relation(fields: [pre_registration_id], references: [id],onDelete: Cascade) 
 
   created_at    DateTime  @default(now()) @db.Timestamptz()
 
@@ -89,8 +90,8 @@ model Subscription {
   start_date DateTime           @default(now()) @db.Timestamptz()
   end_date   DateTime?          @db.Timestamptz()
 
-  user       User      @relation(fields: [user_id], references: [id])
-  plan       Plan      @relation(fields: [plan_id], references: [id])
+ user       User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+ plan       Plan      @relation(fields: [plan_id], references: [id], onDelete: Cascade)
   payments   Payment[]
 
   @@map("subscriptions")
@@ -129,7 +130,7 @@ model Payment {
   // Campo de ouro para a Fase 3: ID do pagamento no Asaas
   asaas_payment_id String?       @unique 
 
-  subscription     Subscription  @relation(fields: [subscription_id], references: [id])
+  subscription     Subscription  @relation(fields: [subscription_id], references: [id], onDelete: Cascade)
 
   created_at       DateTime      @default(now()) @db.Timestamptz()
 
