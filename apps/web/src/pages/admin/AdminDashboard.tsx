@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 import { useAuth } from "@/features/auth/AuthProvider";
 import type { PreRegistrationStatusFilter } from "@/features/auth/types";
 import { getRevealDelayStyle } from "@/features/scrollReveal/useScrollReveal";
@@ -174,10 +175,16 @@ export default function AdminDashboard() {
 
       const dashboardResponse = await fetchAdminDashboard(token);
       setSummary(dashboardResponse.data ?? null);
-    } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : "Erro ao atualizar plano.",
+      toast.success(
+        updatedPlan.active
+          ? "Plano ativado com sucesso."
+          : "Plano desativado com sucesso.",
       );
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Erro ao atualizar plano.";
+      setErrorMessage(message);
+      toast.error(message);
     } finally {
       setTogglingPlanId(null);
     }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "sonner";
 import type {
   AdminPreRegistrationItem,
   PreRegistrationStatusFilter,
@@ -73,11 +74,11 @@ export function PreRegistrationsSection({
   const handleConfirmConversion = async () => {
     if (!selectedLeadId) return;
     if (!cpf || cpf.replace(/\D/g, "").length !== 11) {
-      alert("Por favor, digite um CPF válido com 11 números.");
+      toast.error("Por favor, digite um CPF válido com 11 números.");
       return;
     }
     if (!birthDate) {
-      alert("Por favor, selecione a data de nascimento.");
+      toast.error("Por favor, selecione a data de nascimento.");
       return;
     }
 
@@ -88,8 +89,11 @@ export function PreRegistrationsSection({
       setSelectedLeadId(null);
       setCpf(""); // Limpa o form após sucesso
       setBirthDate(""); // Limpa o form após sucesso
+      toast.success("Matrícula efetivada com sucesso.");
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Erro na conversão.");
+      toast.error(
+        error instanceof Error ? error.message : "Erro na conversão.",
+      );
     } finally {
       setIsConverting(false);
     }
