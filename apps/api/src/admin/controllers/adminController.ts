@@ -6,6 +6,7 @@ import {
   listPreRegistrations,
   togglePlanActive,
   convertPreRegistration,
+  listStudents,
 } from "../services/adminService";
 
 import { PaymentMethod } from "@prisma/client";
@@ -217,6 +218,43 @@ export async function patchPlanActive(
     return reply.status(500).send({
       success: false,
       message: "Erro ao atualizar plano",
+    });
+  }
+}
+
+const studentQuerySchema = z.object({
+  search: z.string().trim().optional(),
+  status: z.enum(["all", "ACTIVE", "OVERDUE", "CANCELED"]).optional(),
+});
+
+// Adicione esta nova função no final do arquivo:
+export async function getStudents(
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
+  const parsedQuery = studentQuerySchema.safeParse(request.query);
+
+  if (!parsedQuery.success) {
+    return reply.status(400).send({
+      success: false,
+      message: "Parâmetros de busca inválidos.",
+    });
+  }
+
+  try {
+    const { search, status } = parsedQuery.data;
+    // Chama o service que acabamos de criar
+    const data = await listStudents({ search, status: status ?? "all" });
+
+    return reply.send({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    request.log.error(error);
+    return reply.status(500).send({
+      success: false,
+      message: "Erro ao buscar a lista de alunos oficiais.",
     });
   }
 }

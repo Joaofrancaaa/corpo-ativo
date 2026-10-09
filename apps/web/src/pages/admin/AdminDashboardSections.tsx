@@ -36,6 +36,20 @@ function formatWhatsapp(value: string): string {
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
 }
 
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+
+  if (parts.length === 0) {
+    return "NA";
+  }
+
+  if (parts.length === 1) {
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+}
+
 interface PreRegistrationsSectionProps {
   items: AdminPreRegistrationItem[];
   searchQuery: string;
@@ -100,9 +114,9 @@ export function PreRegistrationsSection({
   };
 
   return (
-    <section className={styles.section} data-reveal>
+    <section className={`${styles.section} ${styles.tableSection}`} data-reveal>
       <div className={styles.sectionHeader}>
-        <h2 className={styles.sectionTitle}>Pré-matrículas recentes</h2>
+        <h2 className={styles.sectionTitle}>Novos alunos</h2>
         <p className={styles.sectionSubtitle}>
           Leads captados pela landing page aguardando conversão.
         </p>
@@ -158,23 +172,36 @@ export function PreRegistrationsSection({
           <table className={styles.table}>
             <thead>
               <tr>
-                <th>Nome</th>
-                <th>E-mail</th>
-                <th>WhatsApp</th>
-                <th>Plano</th>
-                <th>Status</th>
-                <th>Data</th>
-                <th>Ações</th> {/* Nova Coluna */}
+                <th className={styles.th}>Nome</th>
+                <th className={styles.th}>E-mail</th>
+                <th className={styles.th}>WhatsApp</th>
+                <th className={styles.th}>Plano</th>
+                <th className={styles.th}>Status</th>
+                <th className={styles.th}>Data</th>
+                <th className={styles.th}>Ações</th>
               </tr>
             </thead>
             <tbody>
               {items.map((item) => (
                 <tr key={item.id}>
-                  <td data-label="Nome">{item.name}</td>
-                  <td data-label="E-mail">{item.email}</td>
-                  <td data-label="WhatsApp">{formatWhatsapp(item.whatsapp)}</td>
-                  <td data-label="Plano">{item.planName}</td>
-                  <td data-label="Status">
+                  <td className={styles.td} data-label="Nome">
+                    <span className={styles.studentCell}>
+                      <span className={styles.avatar} aria-hidden="true">
+                        {getInitials(item.name)}
+                      </span>
+                      <span className={styles.studentName}>{item.name}</span>
+                    </span>
+                  </td>
+                  <td className={styles.td} data-label="E-mail">
+                    {item.email}
+                  </td>
+                  <td className={styles.td} data-label="WhatsApp">
+                    {formatWhatsapp(item.whatsapp)}
+                  </td>
+                  <td className={styles.td} data-label="Plano">
+                    {item.planName}
+                  </td>
+                  <td className={styles.td} data-label="Status">
                     <span
                       className={`${styles.paymentBadge} ${
                         item.status === "CONVERTED"
@@ -185,16 +212,19 @@ export function PreRegistrationsSection({
                       }`}
                     >
                       {item.status === "CONVERTED"
-                        ? "Convertido"
+                        ? "Ativo"
                         : item.status === "CANCELLED"
                           ? "Cancelado"
                           : "Aguardando"}
                     </span>
                   </td>
-                  <td data-label="Data">{formatDate(item.createdAt)}</td>
-                  <td data-label="Ações">
+                  <td className={styles.td} data-label="Data">
+                    {formatDate(item.createdAt)}
+                  </td>
+                  <td className={styles.td} data-label="Ações">
                     {item.status === "PENDING" && (
                       <button
+                        type="button"
                         className={styles.convertButton}
                         onClick={() => setSelectedLeadId(item.id)}
                       >
@@ -303,6 +333,229 @@ export function PreRegistrationsSection({
       )}
     </section>
   );
+}
+
+type QuickActionIconName =
+  | "student"
+  | "checkin"
+  | "sale"
+  | "carnet"
+  | "message"
+  | "reports";
+
+interface QuickActionItem {
+  id: string;
+  label: string;
+  icon: QuickActionIconName;
+}
+
+const MOCK_CHECKIN_BARS = [
+  { day: "Seg", barClass: "chartBar1" },
+  { day: "Ter", barClass: "chartBar2" },
+  { day: "Qua", barClass: "chartBar3" },
+  { day: "Qui", barClass: "chartBar4" },
+  { day: "Sex", barClass: "chartBar5" },
+  { day: "Sáb", barClass: "chartBar6" },
+  { day: "Dom", barClass: "chartBar7" },
+] as const;
+
+const MOCK_EXPIRING_PLANS = [
+  { name: "Ana Souza", plan: "Plano Gold", days: 3, tone: "avatarTone1" },
+  { name: "Bruno Lima", plan: "Plano Fit", days: 5, tone: "avatarTone2" },
+  { name: "Carla Mendes", plan: "Plano Premium", days: 7, tone: "avatarTone3" },
+  { name: "Diego Alves", plan: "Plano Gold", days: 8, tone: "avatarTone4" },
+] as const;
+
+const MOCK_LIVE_CHECKINS = [
+  { name: "Lucas Rocha", time: "08:12" },
+  { name: "Marina Dias", time: "08:04" },
+  { name: "Pedro Nunes", time: "07:51" },
+] as const;
+
+const MOCK_ALERTS = [
+  { id: "late", text: "4 pagamentos em atraso", tone: "alertDanger" },
+  { id: "expiring", text: "2 planos vencendo hoje", tone: "alertWarning" },
+  { id: "class", text: "1 aula sem professor", tone: "alertCaution" },
+] as const;
+
+export function CheckInsChartSection() {
+  return (
+    <section className={`${styles.section} ${styles.panel}`} data-reveal>
+      <div className={styles.panelHeader}>
+        <h2 className={styles.sectionTitle}>Check-ins dos últimos 7 dias</h2>
+        <label className={styles.periodField}>
+          <span className={styles.visuallyHidden}>Período do gráfico</span>
+          <select className={styles.periodSelect} defaultValue="all">
+            <option value="all">Todos os períodos</option>
+            <option value="7d">Últimos 7 dias</option>
+          </select>
+        </label>
+      </div>
+
+      <div className={styles.chartPlot} role="img" aria-label="Gráfico de check-ins dos últimos 7 dias">
+        {MOCK_CHECKIN_BARS.map((item) => (
+          <div key={item.day} className={styles.chartColumn}>
+            <div className={styles.chartTrack}>
+              <div className={`${styles.chartBar} ${styles[item.barClass]}`} />
+            </div>
+            <span className={styles.chartLabel}>{item.day}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export function ExpiringPlansSection() {
+  return (
+    <section className={`${styles.section} ${styles.panel}`} data-reveal>
+      <div className={styles.sectionHeader}>
+        <h2 className={styles.sectionTitle}>Planos a vencer</h2>
+      </div>
+
+      <ul className={styles.expiringList}>
+        {MOCK_EXPIRING_PLANS.map((item) => (
+          <li key={item.name} className={styles.expiringItem}>
+            <span className={`${styles.personAvatar} ${styles[item.tone]}`} aria-hidden="true">
+              {getInitials(item.name)}
+            </span>
+            <span className={styles.expiringCopy}>
+              <span className={styles.personName}>{item.name}</span>
+              <span className={styles.personMeta}>{item.plan}</span>
+            </span>
+            <span className={styles.dueSoon}>Vence em {item.days} dias</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+export function CheckInsNowSection() {
+  return (
+    <section className={`${styles.section} ${styles.panel}`} data-reveal>
+      <div className={styles.sectionHeader}>
+        <h2 className={styles.sectionTitle}>Check-ins agora</h2>
+      </div>
+
+      <div className={styles.liveCheckins}>
+        <div className={styles.donutWrap}>
+          <svg className={styles.donut} viewBox="0 0 36 36" aria-hidden="true">
+            <circle className={styles.donutTrack} cx="18" cy="18" r="14" />
+            <circle className={styles.donutValue} cx="18" cy="18" r="14" />
+          </svg>
+          <span className={styles.donutNumber}>12</span>
+        </div>
+
+        <ul className={styles.liveList}>
+          {MOCK_LIVE_CHECKINS.map((item) => (
+            <li key={item.name} className={styles.liveItem}>
+              <span className={styles.liveName}>{item.name}</span>
+              <span className={styles.liveTime}>{item.time}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+export function AlertsSection() {
+  return (
+    <section className={`${styles.section} ${styles.panel}`} data-reveal>
+      <div className={styles.sectionHeader}>
+        <h2 className={styles.sectionTitle}>Alertas importantes</h2>
+      </div>
+
+      <ul className={styles.alertsList}>
+        {MOCK_ALERTS.map((item) => (
+          <li key={item.id} className={styles.alertItem}>
+            <span className={`${styles.alertDot} ${styles[item.tone]}`} aria-hidden="true" />
+            <span>{item.text}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+const QUICK_ACTIONS: QuickActionItem[] = [
+  { id: "new-student", label: "Novo aluno", icon: "student" },
+  { id: "manual-checkin", label: "Check-in manual", icon: "checkin" },
+  { id: "new-sale", label: "Nova venda", icon: "sale" },
+  { id: "carnet", label: "Emitir carnê", icon: "carnet" },
+  { id: "message", label: "Enviar mensagem", icon: "message" },
+  { id: "reports", label: "Ver relatórios", icon: "reports" },
+];
+
+export function QuickActionsSection() {
+  return (
+    <section className={`${styles.section} ${styles.quickActions}`} data-reveal>
+      <div className={styles.sectionHeader}>
+        <h2 className={styles.sectionTitle}>Ações rápidas</h2>
+      </div>
+
+      <div className={styles.quickActionsGrid}>
+        {QUICK_ACTIONS.map((action) => (
+          <button
+            key={action.id}
+            type="button"
+            className={styles.quickActionButton}
+            onClick={undefined}
+          >
+            <QuickActionIcon name={action.icon} />
+            <span>{action.label}</span>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function QuickActionIcon({ name }: { name: QuickActionIconName }) {
+  switch (name) {
+    case "student":
+      return (
+        <svg className={styles.quickActionIcon} viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="8" r="3.25" />
+          <path d="M5.5 19c.7-3.2 3.3-5 6.5-5s5.8 1.8 6.5 5" />
+        </svg>
+      );
+    case "checkin":
+      return (
+        <svg className={styles.quickActionIcon} viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="5" y="3.5" width="14" height="17" rx="2" />
+          <path d="M8.5 12.2 10.7 14.5 15.5 9.5" />
+        </svg>
+      );
+    case "sale":
+      return (
+        <svg className={styles.quickActionIcon} viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="3.5" y="6" width="17" height="12" rx="2" />
+          <path d="M3.5 10h17" />
+        </svg>
+      );
+    case "carnet":
+      return (
+        <svg className={styles.quickActionIcon} viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="5" y="3.5" width="14" height="17" rx="2" />
+          <path d="M8 8h8M8 12h8M8 16h5" />
+        </svg>
+      );
+    case "message":
+      return (
+        <svg className={styles.quickActionIcon} viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 6.5h14a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H9l-4 3v-3H5A1.5 1.5 0 0 1 3.5 15V8A1.5 1.5 0 0 1 5 6.5z" />
+        </svg>
+      );
+    case "reports":
+      return (
+        <svg className={styles.quickActionIcon} viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4.5 19.5h15" />
+          <path d="M7 16v-4.5M12 16V8M17 16v-7" />
+        </svg>
+      );
+  }
 }
 
 // ... PlansSectionProps e PlansSection permanecem inalterados abaixo

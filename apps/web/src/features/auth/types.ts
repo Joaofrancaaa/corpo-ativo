@@ -60,3 +60,25 @@ export interface AdminDashboardResponse {
   data?: AdminDashboardSummary;
   message?: string;
 }
+
+export interface StudentSubscription {
+  id: string;
+  status: "ACTIVE" | "OVERDUE" | "CANCELED";
+  planName: string;
+}
+
+export interface AdminStudentItem {
+  id: string;
+  name: string;
+  email: string | null;
+  cpf: string;
+  whatsapp: string | null;
+  birthDate: string | null;
+  createdAt: string;
+  subscription: StudentSubscription | null;
+}
+
+export interface AdminStudentFilters {
+  search?: string;
+  status?: "all" | "ACTIVE" | "OVERDUE" | "CANCELED";
+}

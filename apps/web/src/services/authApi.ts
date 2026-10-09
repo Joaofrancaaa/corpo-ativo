@@ -6,6 +6,7 @@ import type {
   AuthUser,
   LoginResponse,
   MeResponse,
+  AdminStudentItem, AdminStudentFilters
 } from "@/features/auth/types";
 import { env } from "@/config/env";
 
@@ -200,4 +201,35 @@ export async function convertAdminPreRegistration(
   }
 
   return data;
+}
+
+export async function fetchAdminStudents(
+  token: string,
+  filters: AdminStudentFilters = {},
+): Promise<AdminStudentItem[]> {
+  const params = new URLSearchParams();
+
+  if (filters.search?.trim()) {
+    params.set("search", filters.search.trim());
+  }
+
+  if (filters?.status && filters.status !== "all") {
+    params.append("status", filters.status);
+  }
+
+  const queryString = params.toString();
+  const url = `${env.apiUrl}/admin/students${queryString ? `?${queryString}` : ""}`;
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: authHeaders(token),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Erro ao carregar lista de alunos.");
+  }
+
+  return data.data ?? [];
 }

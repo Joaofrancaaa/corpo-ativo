@@ -1,8 +1,10 @@
 import { Route, Routes } from "react-router-dom";
 import LandingPage from "@/pages/LandingPage";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
+import AdminStudents from "@/pages/admin/Sidebar/AdminStudents";
 import StudentDashboard from "@/pages/student/StudentDashboard";
 import ProtectedRoute from "@/features/auth/ProtectedRoute";
+import AdminLayout from "@/components/Layout/AdminLayout";
 
 export default function AppRoutes() {
   return (
@@ -12,7 +14,19 @@ export default function AppRoutes() {
         path="/admin"
         element={
           <ProtectedRoute allowedRoles={["ADMIN"]}>
-            <AdminDashboard />
+            <AdminLayout>
+              <AdminDashboard />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/alunos"
+        element={
+          <ProtectedRoute allowedRoles={["ADMIN"]}>
+            <AdminLayout>
+              <AdminStudents />
+            </AdminLayout>
           </ProtectedRoute>
         }
       />

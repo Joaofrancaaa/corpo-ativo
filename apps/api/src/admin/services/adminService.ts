@@ -228,3 +228,66 @@ export async function togglePlanActive(planId: string): Promise<AdminPlanItem> {
     active: updatedPlan.active,
   };
 }
+
+export async function listStudents(filters?: { search?: string; status?: string }) {
+  const where: Prisma.UserWhereInput = {
+    role: "STUDENT", // Garante que não vamos listar os Admins na tabela de alunos
+  };
+
+  // Filtro de busca por texto
+  if (filters?.search) {
+    const search = filters.search.trim();
+    where.OR = [
+      { name: { contains: search, mode: "insensitive" } },
+      { email: { contains: search, mode: "insensitive" } },
+      { cpf: { contains: search, mode: "insensitive" } },
+    ];
+  }
+
+  // Filtro por status da assinatura (ACTIVE, OVERDUE, CANCELED)
+  if (filters?.status && filters.status !== "all") {
+    where.subscriptions = {
+      some: {
+        status: filters.status as SubscriptionStatus,
+      },
+    };
+  }
+
+  const students = await prisma.user.findMany({
+    where,
+    include: {
+      subscriptions: {
+        include: {
+          plan: true,
+        },
+        // Removemos o 'orderBy' com created_at que estava dando erro
+        // e o 'take: 1' temporariamente para garantir a tipagem correta.
+      },
+    },
+    orderBy: { created_at: "desc" }, // Ordena os alunos pelos mais recentes
+  });
+
+  // Mapeia os dados para entregar um objeto limpo para o Front-end
+  return students.map((student) => {
+    // Como os alunos da Corpo Ativo costumam ter apenas 1 assinatura ativa,
+    // nós pegamos a primeira (ou a última que entrou na lista).
+    const latestSub = student.subscriptions.length > 0 
+      ? student.subscriptions[student.subscriptions.length - 1] 
+      : null;
+    
+    return {
+      id: student.id,
+      name: student.name,
+      email: student.email,
+      cpf: student.cpf,
+      whatsapp: student.whatsapp,
+      birthDate: student.birth_date,
+      createdAt: student.created_at,
+      subscription: latestSub ? {
+        id: latestSub.id,
+        status: latestSub.status,
+        planName: latestSub.plan.name,
+      } : null, 
+    };
+  });
+}

@@ -4,6 +4,7 @@ import {
   getAdminPlans,
   getDashboard,
   getPreRegistrations,
+  getStudents,
   patchPlanActive,
   postConvertPreRegistration,
 } from "../controllers/adminController";
@@ -31,5 +32,11 @@ export async function adminRoutes(app: FastifyInstance) {
     "/admin/pre-registrations/:id/convert",
     { preHandler: adminGuard },
     postConvertPreRegistration,
+  );
+
+  app.get(
+    "/admin/students",
+    { preHandler: adminGuard },
+    getStudents
   );
 }

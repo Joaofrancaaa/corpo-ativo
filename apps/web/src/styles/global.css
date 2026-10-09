@@ -1,12 +1,20 @@
 :root {
-  /* Paleta Corpo Ativo */
-  --bg-dark: #1F2227;
-  --bg-darker: #15171A;
-  --accent-orange: #F2A900;
-  --accent-orange-hover: #E59400;
-  --text-light: #FFFFFF;
-  --text-muted: #A0AEC0;
-  --card-bg: #2A2D34;
+  /* Paleta Corpo Ativo — Dark Mode */
+  --bg-dark: #121212;
+  --bg-darker: #0a0a0a;
+  --bg-sidebar: #0e0e0e;
+  --bg-elevated: #1c1c1c;
+  --accent-orange: #ffb800;
+  --accent-orange-hover: #e5a400;
+  --accent-on-accent: #121212;
+  --text-light: #ffffff;
+  --text-muted: #a0a0a0;
+  --card-bg: #1c1c1c;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --status-positive: #4ade80;
+  --status-warning: #ff5722;
+  --admin-sidebar-width: 15.5rem;
+  --admin-header-height: 4rem;
 
   /* Tipografia */
   --font-primary: 'Montserrat', sans-serif;
