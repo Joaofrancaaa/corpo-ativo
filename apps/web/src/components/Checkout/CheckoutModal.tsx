@@ -20,7 +20,7 @@ interface CheckoutModalProps {
   selectedPlan: Plan | null;
 }
 
-// WhatsApp da recepção (prefixo país + DDD + número)
+// WhatsApp da recepção (prefixo país + 3DD + número)
 const RECEPTION_WHATSAPP = "5599991037975";
 
 function buildWhatsAppUrl(planName: string, userName: string): string {
