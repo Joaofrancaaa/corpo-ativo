@@ -21,7 +21,7 @@ interface CheckoutModalProps {
 }
 
 // WhatsApp da recepção (prefixo país + DDD + número)
-const RECEPTION_WHATSAPP = "5599999999999";
+const RECEPTION_WHATSAPP = "5599991037975";
 
 function buildWhatsAppUrl(planName: string, userName: string): string {
   const message = encodeURIComponent(
