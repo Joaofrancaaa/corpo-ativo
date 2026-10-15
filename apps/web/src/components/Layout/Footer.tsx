@@ -33,7 +33,7 @@ export default function Footer() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              WhatsApp: (11) 99999-9999
+              WhatsApp: (99) 99103-7975
             </a>
           </div>
         </div>
