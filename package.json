@@ -12,7 +12,8 @@
     "build": "turbo run build",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
-    "dev:web": "npm run dev --workspace=@corpo-ativo/web"
+    "dev:web": "npm run dev --workspace=@corpo-ativo/web",
+    "db:seed": "npm run seed --workspace=api"
   },
   "devDependencies": {
     "turbo": "^2.5.4",

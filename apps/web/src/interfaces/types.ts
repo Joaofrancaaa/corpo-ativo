@@ -2,7 +2,7 @@ export interface Plan {
   id: string;
   name: string;
   price: number;
-  billingCycle: 'monthly' | 'quarterly' | 'yearly';
+  billingCycle: 'monthly' | 'quarterly' | 'yearly' | 'weekly' | 'daily';
   features: string[];
   isPopular?: boolean;
 }

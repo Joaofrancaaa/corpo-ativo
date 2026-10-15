@@ -1,5 +1,5 @@
 /** Data simulada da inauguração — substituível via CMS/API na Fase 2 */
-export const INAUGURATION_DATE = new Date('2026-10-17T08:00:00');
+export const INAUGURATION_DATE = new Date('2026-10-17T19:00:00');
 
 export const HERO_COPY = {
   eyebrow: 'Inauguração em breve',

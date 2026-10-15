@@ -10,6 +10,8 @@ const billingCycleLabels: Record<string, string> = {
   monthly: "Mensal",
   quarterly: "Trimestral",
   yearly: "Anual",
+  weekly: "Semanal",
+  daily: "Avulso",
 };
 
 function formatCurrency(value: number): string {
