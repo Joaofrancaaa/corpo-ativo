@@ -104,7 +104,7 @@ const OFFICIAL_PLANS = [
 function toPlanData(plan: (typeof OFFICIAL_PLANS)[number]) {
   return {
     name: plan.name,
-    price: plan.price,
+    price: plan.price,  
     billingCycle: plan.billingCycle,
     features: [...plan.features],
     isPopular: plan.isPopular,
