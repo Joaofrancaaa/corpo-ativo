@@ -1,7 +1,7 @@
 import styles from './Footer.module.css';
 import { Logo } from '../common/Logo';
-const INSTAGRAM_URL = 'https://instagram.com/corpoativo';
-const WHATSAPP_URL = 'https://wa.me/5511999999999';
+const INSTAGRAM_URL = 'https://www.instagram.com/corpoativoacad/';
+const WHATSAPP_URL = 'https://wa.me/5599991037975';
 
 export default function Footer() {
   return (
