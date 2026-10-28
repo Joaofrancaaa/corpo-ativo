@@ -29,18 +29,30 @@ export function useScrollReveal() {
         });
       },
       {
-        threshold: 0.12,
-        rootMargin: '0px 0px -8% 0px',
+        threshold: 0,
+        rootMargin: '0px',
       },
     );
+
+    const revealElement = (element: HTMLElement) => {
+      element.classList.add(REVEALED_CLASS);
+      intersectionObserver.unobserve(element);
+    };
+
+    const isAlreadyVisible = (element: HTMLElement) => {
+      const rect = element.getBoundingClientRect();
+      const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+
+      return rect.bottom > 0 && rect.top < viewportHeight;
+    };
 
     const observeElement = (element: Element) => {
       if (!isRevealElement(element) || element.classList.contains(REVEALED_CLASS)) {
         return;
       }
 
-      if (motionQuery.matches) {
-        element.classList.add(REVEALED_CLASS);
+      if (motionQuery.matches || isAlreadyVisible(element)) {
+        revealElement(element);
         return;
       }
 
