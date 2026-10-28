@@ -238,6 +238,14 @@
   align-items: center;
 }
 
+.chartValue {
+  margin-bottom: 0.35rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--text-light);
+  text-align: center;
+}
+
 .chartBar {
   width: 100%;
   max-width: 2.35rem;
@@ -245,32 +253,34 @@
   background: var(--accent-orange);
 }
 
-.chartBar1 {
-  height: 42%;
+.paymentSummary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
 }
 
-.chartBar2 {
-  height: 68%;
+.paymentSummaryItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem;
+  background: #161616;
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.75rem;
+  font-size: 0.9375rem;
+  color: var(--text-light);
 }
 
-.chartBar3 {
-  height: 54%;
+.paymentSummaryLabel {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
-.chartBar4 {
-  height: 88%;
-}
-
-.chartBar5 {
-  height: 76%;
-}
-
-.chartBar6 {
-  height: 100%;
-}
-
-.chartBar7 {
-  height: 46%;
+.paymentFilter {
+  max-width: 16rem;
 }
 
 .chartLabel {
@@ -572,6 +582,14 @@
 }
 
 @media (max-width: 767px) {
+  .paymentSummary {
+    grid-template-columns: 1fr;
+  }
+
+  .paymentFilter {
+    max-width: none;
+  }
+
   .table {
     min-width: 0;
   }

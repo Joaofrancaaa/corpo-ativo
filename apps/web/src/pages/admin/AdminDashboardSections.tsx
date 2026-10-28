@@ -1,9 +1,16 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import type {
   AdminPreRegistrationItem,
   PreRegistrationStatusFilter,
 } from "@/features/auth/types";
+import type {
+  DemoAlert,
+  DemoCheckInBar,
+  DemoExpiringPlan,
+  DemoPayment,
+  DemoPaymentStatus,
+} from "./dashboardMock";
 import styles from "./AdminDashboardSections.module.css";
 
 const billingCycleLabels: Record<string, string> = {
@@ -351,54 +358,56 @@ interface QuickActionItem {
   icon: QuickActionIconName;
 }
 
-const MOCK_CHECKIN_BARS = [
-  { day: "Seg", barClass: "chartBar1" },
-  { day: "Ter", barClass: "chartBar2" },
-  { day: "Qua", barClass: "chartBar3" },
-  { day: "Qui", barClass: "chartBar4" },
-  { day: "Sex", barClass: "chartBar5" },
-  { day: "Sáb", barClass: "chartBar6" },
-  { day: "Dom", barClass: "chartBar7" },
-] as const;
+const PAYMENT_STATUS_LABELS: Record<DemoPaymentStatus, string> = {
+  PAID: "Pago",
+  PENDING: "Pendente",
+  OVERDUE: "Em atraso",
+};
 
-const MOCK_EXPIRING_PLANS = [
-  { name: "Ana Souza", plan: "Plano Gold", days: 3, tone: "avatarTone1" },
-  { name: "Bruno Lima", plan: "Plano Fit", days: 5, tone: "avatarTone2" },
-  { name: "Carla Mendes", plan: "Plano Premium", days: 7, tone: "avatarTone3" },
-  { name: "Diego Alves", plan: "Plano Gold", days: 8, tone: "avatarTone4" },
-] as const;
+const PAYMENT_STATUS_FILTERS: Array<{
+  value: "all" | DemoPaymentStatus;
+  label: string;
+}> = [
+  { value: "all", label: "Todos" },
+  { value: "PAID", label: "Pagos" },
+  { value: "PENDING", label: "Pendentes" },
+  { value: "OVERDUE", label: "Em atraso" },
+];
 
-const MOCK_LIVE_CHECKINS = [
-  { name: "Lucas Rocha", time: "08:12" },
-  { name: "Marina Dias", time: "08:04" },
-  { name: "Pedro Nunes", time: "07:51" },
-] as const;
+function paymentBadgeClass(status: DemoPaymentStatus): string {
+  if (status === "PAID") {
+    return styles.paymentBadgePaid;
+  }
 
-const MOCK_ALERTS = [
-  { id: "late", text: "4 pagamentos em atraso", tone: "alertDanger" },
-  { id: "expiring", text: "2 planos vencendo hoje", tone: "alertWarning" },
-  { id: "class", text: "1 aula sem professor", tone: "alertCaution" },
-] as const;
+  if (status === "OVERDUE") {
+    return styles.paymentBadgeFailed;
+  }
 
-export function CheckInsChartSection() {
+  return styles.paymentBadgePending;
+}
+
+export function CheckInsChartSection({ bars }: { bars: DemoCheckInBar[] }) {
+  const peak = Math.max(...bars.map((bar) => bar.count), 1);
+
   return (
     <section className={`${styles.section} ${styles.panel}`} data-reveal>
       <div className={styles.panelHeader}>
         <h2 className={styles.sectionTitle}>Check-ins dos últimos 7 dias</h2>
-        <label className={styles.periodField}>
-          <span className={styles.visuallyHidden}>Período do gráfico</span>
-          <select className={styles.periodSelect} defaultValue="all">
-            <option value="all">Todos os períodos</option>
-            <option value="7d">Últimos 7 dias</option>
-          </select>
-        </label>
       </div>
 
-      <div className={styles.chartPlot} role="img" aria-label="Gráfico de check-ins dos últimos 7 dias">
-        {MOCK_CHECKIN_BARS.map((item) => (
+      <div
+        className={styles.chartPlot}
+        role="img"
+        aria-label="Gráfico de check-ins dos últimos 7 dias"
+      >
+        {bars.map((item) => (
           <div key={item.day} className={styles.chartColumn}>
+            <span className={styles.chartValue}>{item.count}</span>
             <div className={styles.chartTrack}>
-              <div className={`${styles.chartBar} ${styles[item.barClass]}`} />
+              <div
+                className={styles.chartBar}
+                style={{ height: `${Math.round((item.count / peak) * 100)}%` }}
+              />
             </div>
             <span className={styles.chartLabel}>{item.day}</span>
           </div>
@@ -408,7 +417,133 @@ export function CheckInsChartSection() {
   );
 }
 
-export function ExpiringPlansSection() {
+interface PaymentsSectionProps {
+  payments: DemoPayment[];
+  paidTotal: number;
+  pendingTotal: number;
+  overdueTotal: number;
+}
+
+export function PaymentsSection({
+  payments,
+  paidTotal,
+  pendingTotal,
+  overdueTotal,
+}: PaymentsSectionProps) {
+  const [statusFilter, setStatusFilter] = useState<"all" | DemoPaymentStatus>(
+    "all",
+  );
+
+  const visiblePayments = useMemo(
+    () =>
+      statusFilter === "all"
+        ? payments
+        : payments.filter((payment) => payment.status === statusFilter),
+    [payments, statusFilter],
+  );
+
+  return (
+    <section className={`${styles.section} ${styles.tableSection}`} data-reveal>
+      <div className={styles.sectionHeader}>
+        <h2 className={styles.sectionTitle}>Pagamentos</h2>
+        <p className={styles.sectionSubtitle}>
+          Recebimentos da recepção e cobranças do mês, já com o status de cada
+          aluno.
+        </p>
+      </div>
+
+      <div className={styles.paymentSummary}>
+        <p className={styles.paymentSummaryItem}>
+          <span className={styles.paymentSummaryLabel}>Recebido</span>
+          <strong>{formatCurrency(paidTotal)}</strong>
+        </p>
+        <p className={styles.paymentSummaryItem}>
+          <span className={styles.paymentSummaryLabel}>Em aberto</span>
+          <strong>{formatCurrency(pendingTotal)}</strong>
+        </p>
+        <p className={styles.paymentSummaryItem}>
+          <span className={styles.paymentSummaryLabel}>Em atraso</span>
+          <strong>{formatCurrency(overdueTotal)}</strong>
+        </p>
+      </div>
+
+      <label className={`${styles.filterField} ${styles.paymentFilter}`}>
+        <span className={styles.filterLabel}>Status</span>
+        <select
+          className={styles.filterSelect}
+          value={statusFilter}
+          onChange={(event) =>
+            setStatusFilter(event.target.value as "all" | DemoPaymentStatus)
+          }
+        >
+          {PAYMENT_STATUS_FILTERS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      {visiblePayments.length === 0 ? (
+        <p className={styles.emptyState}>
+          Nenhum pagamento encontrado com esse status.
+        </p>
+      ) : (
+        <div className={styles.tableWrapper}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th className={styles.th}>Aluno</th>
+                <th className={styles.th}>Plano</th>
+                <th className={styles.th}>Valor</th>
+                <th className={styles.th}>Forma</th>
+                <th className={styles.th}>Status</th>
+                <th className={styles.th}>Data</th>
+              </tr>
+            </thead>
+            <tbody>
+              {visiblePayments.map((payment) => (
+                <tr key={payment.id}>
+                  <td className={styles.td} data-label="Aluno">
+                    <span className={styles.studentCell}>
+                      <span className={styles.avatar} aria-hidden="true">
+                        {getInitials(payment.studentName)}
+                      </span>
+                      <span className={styles.studentName}>
+                        {payment.studentName}
+                      </span>
+                    </span>
+                  </td>
+                  <td className={styles.td} data-label="Plano">
+                    {payment.planName}
+                  </td>
+                  <td className={styles.td} data-label="Valor">
+                    {formatCurrency(payment.amount)}
+                  </td>
+                  <td className={styles.td} data-label="Forma">
+                    {payment.methodLabel}
+                  </td>
+                  <td className={styles.td} data-label="Status">
+                    <span
+                      className={`${styles.paymentBadge} ${paymentBadgeClass(payment.status)}`}
+                    >
+                      {PAYMENT_STATUS_LABELS[payment.status]}
+                    </span>
+                  </td>
+                  <td className={styles.td} data-label="Data">
+                    {formatDate(payment.date)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  );
+}
+
+export function ExpiringPlansSection({ items }: { items: DemoExpiringPlan[] }) {
   return (
     <section className={`${styles.section} ${styles.panel}`} data-reveal>
       <div className={styles.sectionHeader}>
@@ -416,7 +551,7 @@ export function ExpiringPlansSection() {
       </div>
 
       <ul className={styles.expiringList}>
-        {MOCK_EXPIRING_PLANS.map((item) => (
+        {items.map((item) => (
           <li key={item.name} className={styles.expiringItem}>
             <span className={`${styles.personAvatar} ${styles[item.tone]}`} aria-hidden="true">
               {getInitials(item.name)}
@@ -433,7 +568,13 @@ export function ExpiringPlansSection() {
   );
 }
 
-export function CheckInsNowSection() {
+export function CheckInsNowSection({
+  count,
+  items,
+}: {
+  count: number;
+  items: Array<{ name: string; time: string }>;
+}) {
   return (
     <section className={`${styles.section} ${styles.panel}`} data-reveal>
       <div className={styles.sectionHeader}>
@@ -446,11 +587,11 @@ export function CheckInsNowSection() {
             <circle className={styles.donutTrack} cx="18" cy="18" r="14" />
             <circle className={styles.donutValue} cx="18" cy="18" r="14" />
           </svg>
-          <span className={styles.donutNumber}>12</span>
+          <span className={styles.donutNumber}>{count}</span>
         </div>
 
         <ul className={styles.liveList}>
-          {MOCK_LIVE_CHECKINS.map((item) => (
+          {items.map((item) => (
             <li key={item.name} className={styles.liveItem}>
               <span className={styles.liveName}>{item.name}</span>
               <span className={styles.liveTime}>{item.time}</span>
@@ -462,7 +603,7 @@ export function CheckInsNowSection() {
   );
 }
 
-export function AlertsSection() {
+export function AlertsSection({ alerts }: { alerts: DemoAlert[] }) {
   return (
     <section className={`${styles.section} ${styles.panel}`} data-reveal>
       <div className={styles.sectionHeader}>
@@ -470,7 +611,7 @@ export function AlertsSection() {
       </div>
 
       <ul className={styles.alertsList}>
-        {MOCK_ALERTS.map((item) => (
+        {alerts.map((item) => (
           <li key={item.id} className={styles.alertItem}>
             <span className={`${styles.alertDot} ${styles[item.tone]}`} aria-hidden="true" />
             <span>{item.text}</span>

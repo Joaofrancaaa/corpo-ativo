@@ -2,7 +2,7 @@ import { getRevealDelayStyle } from '@/features/scrollReveal/useScrollReveal';
 import styles from './TrustStrip.module.css';
 
 const TRUST_ITEMS = [
-  { value: '1.500m²', label: 'Estrutura planejada' },
+  { value: '1.500m²', label: 'De estrutura' },
   { value: '100+', label: 'Equipamentos' },
   { value: '3+', label: 'Modalidades' },
   { value: '1', label: 'Objetivo: sua evolução' },

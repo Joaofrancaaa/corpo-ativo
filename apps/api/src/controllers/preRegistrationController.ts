@@ -43,7 +43,8 @@ export async function createPreRegistration(
       // Fallback genérico caso não consiga identificar o campo
       return reply.status(400).send({
         success: false,
-        message: "Você já realizou sua pré-matrícula.",
+          message:
+            "Seus dados já estão cadastrados. Se precisar de ajuda, fale com a recepção.",
       });
     }
 

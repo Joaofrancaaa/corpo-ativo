@@ -107,12 +107,10 @@ export default function PricingSection() {
           <h2 className={styles.title} id="pricing-title">
             Escolha seu Plano
           </h2>
-          <p className={styles.urgency}>
-            🔥 Lote 1 de Inauguração - Vagas Limitadas
-          </p>
+          <p className={styles.urgency}>Matrículas abertas</p>
           <p className={styles.subtitle}>
-            Pré-matrícula com condições especiais de inauguração. Sem
-            compromisso até a abertura.
+            Escolha o plano e comece a treinar. A recepção confirma sua
+            matrícula.
           </p>
         </header>
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/features/auth/AuthProvider";
 import type { PreRegistrationStatusFilter } from "@/features/auth/types";
@@ -19,10 +19,12 @@ import {
   CheckInsChartSection,
   CheckInsNowSection,
   ExpiringPlansSection,
+  PaymentsSection,
   PlansSection,
   PreRegistrationsSection,
   QuickActionsSection,
 } from "./AdminDashboardSections";
+import { getDashboardDemo } from "./dashboardMock";
 import styles from "./AdminDashboard.module.css";
 
 const SEARCH_DEBOUNCE_MS = 350;
@@ -44,6 +46,7 @@ function formatLongDate(value: Date): string {
 
 export default function AdminDashboard() {
   const { token } = useAuth();
+  const demo = useMemo(() => getDashboardDemo(), []);
   const [summary, setSummary] = useState<AdminDashboardSummary | null>(null);
   const [preRegistrations, setPreRegistrations] = useState<
     AdminPreRegistrationItem[]
@@ -250,11 +253,9 @@ export default function AdminDashboard() {
                 <span className={`${styles.cardIcon} ${styles.cardIconAccent}`}>
                   <UsersIcon />
                 </span>
-                <p className={styles.cardValue}>
-                  {summary.preRegistrationsCount}
-                </p>
+                <p className={styles.cardValue}>{demo.activeStudents}</p>
                 <p className={styles.cardLabel}>Alunos ativos</p>
-                <p className={styles.cardTrend}>+ 12% vs mês anterior</p>
+                <p className={styles.cardTrend}>{demo.studentsTrend}</p>
               </article>
 
               <article
@@ -264,9 +265,9 @@ export default function AdminDashboard() {
                 <span className={styles.cardIcon}>
                   <CheckInIcon />
                 </span>
-                <p className={styles.cardValue}>0</p>
+                <p className={styles.cardValue}>{demo.checkInsToday}</p>
                 <p className={styles.cardLabel}>Check-ins hoje</p>
-                <p className={styles.cardTrend}>+ 8% vs ontem</p>
+                <p className={styles.cardTrend}>{demo.checkInsTrend}</p>
               </article>
 
               <article
@@ -276,9 +277,11 @@ export default function AdminDashboard() {
                 <span className={styles.cardIcon}>
                   <RevenueIcon />
                 </span>
-                <p className={styles.cardValue}>{formatCurrency(0)}</p>
+                <p className={styles.cardValue}>
+                  {formatCurrency(demo.monthRevenue)}
+                </p>
                 <p className={styles.cardLabel}>Faturamento (mês)</p>
-                <p className={styles.cardTrend}>+ 15% vs mês anterior</p>
+                <p className={styles.cardTrend}>{demo.revenueTrend}</p>
               </article>
 
               <article
@@ -288,7 +291,7 @@ export default function AdminDashboard() {
                 <span className={styles.cardIcon}>
                   <ClassesIcon />
                 </span>
-                <p className={styles.cardValue}>{summary.activePlansCount}</p>
+                <p className={styles.cardValue}>{demo.classesToday}</p>
                 <p className={styles.cardLabel}>Aulas hoje</p>
                 <button type="button" className={styles.cardLink}>
                   Ver agenda
@@ -299,7 +302,13 @@ export default function AdminDashboard() {
             <div className={styles.sections}>
               <div className={styles.dashboardBody}>
                 <div className={styles.mainColumn}>
-                  <CheckInsChartSection />
+                  <CheckInsChartSection bars={demo.checkIns} />
+                  <PaymentsSection
+                    payments={demo.payments}
+                    paidTotal={demo.paidTotal}
+                    pendingTotal={demo.pendingTotal}
+                    overdueTotal={demo.overdueTotal}
+                  />
                   <PreRegistrationsSection
                     items={preRegistrations}
                     searchQuery={searchQuery}
@@ -314,9 +323,12 @@ export default function AdminDashboard() {
                 </div>
 
                 <aside className={styles.sideColumn} aria-label="Painéis laterais">
-                  <CheckInsNowSection />
-                  <ExpiringPlansSection />
-                  <AlertsSection />
+                  <CheckInsNowSection
+                    count={demo.liveNowCount}
+                    items={demo.liveCheckIns}
+                  />
+                  <ExpiringPlansSection items={demo.expiringPlans} />
+                  <AlertsSection alerts={demo.alerts} />
                   <QuickActionsSection />
                 </aside>
               </div>

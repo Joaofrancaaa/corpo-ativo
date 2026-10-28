@@ -54,12 +54,12 @@ export const submitPreRegistration = async (
 
     // Se o status HTTP não for OK (ex: 400 de erro de duplicidade ou 500 erro interno)
     if (!response.ok) {
-      throw new Error(data.message || "Erro ao realizar a pré-matrícula.");
+      throw new Error(data.message || "Não foi possível enviar seu pedido.");
     }
 
     return {
       success: true,
-      message: data.message || "Pré-matrícula realizada com sucesso!",
+      message: data.message || "Pedido enviado com sucesso!",
     };
   } catch (error: any) {
     console.error("Erro na API:", error);

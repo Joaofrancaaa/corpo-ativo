@@ -106,7 +106,7 @@ export default function PlanCard({ plan, revealIndex = 0, onSelect }: PlanCardPr
         className={`${styles.cta} ${featured ? styles.ctaFeatured : styles.ctaSecondary}`}
         onClick={handleCtaClick}
       >
-        Garantir Vaga
+        Quero este plano
       </button>
     </article>
   );

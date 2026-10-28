@@ -1,13 +1,10 @@
-/** Data simulada da inauguração — substituível via CMS/API na Fase 2 */
-export const INAUGURATION_DATE = new Date('2026-10-17T19:00:00');
-
 export const HERO_COPY = {
-  eyebrow: 'Inauguração em breve',
+  eyebrow: 'Estamos abertos',
   title: 'Corpo',
   titleAccent: 'Ativo',
   highlight: 'Movimento que transforma.',
   subtitle:
-    'Academia completa com musculação, aulas coletivas e ambiente pensado para você evoluir. Pré-matrícula com condições exclusivas de lançamento.',
-  ctaLabel: 'Garantir minha vaga',
+    'Academia completa com musculação, aulas coletivas e ambiente pensado para você evoluir. Matricule-se e comece a treinar.',
+  ctaLabel: 'Ver planos',
   ctaHref: '#planos',
 } as const;

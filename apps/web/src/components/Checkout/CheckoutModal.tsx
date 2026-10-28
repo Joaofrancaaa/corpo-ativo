@@ -25,7 +25,7 @@ const RECEPTION_WHATSAPP = "5599991037975";
 
 function buildWhatsAppUrl(planName: string, userName: string): string {
   const message = encodeURIComponent(
-    `Olá! Acabei de fazer a pré-matrícula no plano ${planName}. Meu nome é ${userName}. Gostaria de confirmar minha vaga na Corpo Ativo.`,
+    `Olá! Quero me matricular no plano ${planName}. Meu nome é ${userName}.`,
   );
   return `https://wa.me/${RECEPTION_WHATSAPP}?text=${message}`;
 }
@@ -135,7 +135,7 @@ export default function CheckoutModal({
       } else {
         setStatus("error");
         setErrorMessage(
-          result.message || "Não foi possível concluir a pré-matrícula.",
+          result.message || "Não foi possível enviar seu pedido.",
         );
       }
     } catch (err) {
@@ -190,11 +190,11 @@ export default function CheckoutModal({
                 <div className={styles.successIcon} aria-hidden="true">
                   ✓
                 </div>
-                <h2 className={styles.successTitle}>Vaga reservada!</h2>
+                <h2 className={styles.successTitle}>Pedido enviado!</h2>
                 <p className={styles.successMessage}>
-                  Sua pré-matrícula no plano{" "}
-                  <strong>{selectedPlan.name}</strong> foi registrada. Nossa
-                  equipe entrará em contato em breve.
+                  Recebemos seu interesse no plano{" "}
+                  <strong>{selectedPlan.name}</strong>. Nossa equipe entra em
+                  contato para concluir a matrícula.
                 </p>
                 <a
                   className={styles.whatsappButton}
@@ -209,7 +209,7 @@ export default function CheckoutModal({
               <>
                 <header className={styles.header}>
                   <h2 className={styles.title} id="checkout-title">
-                    Finalizar Pré-matrícula
+                    Quero me matricular
                   </h2>
                   <p className={styles.planName}>Plano {selectedPlan.name}</p>
                 </header>
@@ -301,7 +301,7 @@ export default function CheckoutModal({
                   >
                     {status === "loading"
                       ? "Processando..."
-                      : "Garantir Condição Especial"}
+                      : "Enviar meus dados"}
                   </button>
                 </form>
               </>
