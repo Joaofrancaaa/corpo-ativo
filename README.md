@@ -39,33 +39,6 @@ Aplicação full-stack desenvolvida para a **Corpo Ativo Academia**, unindo uma 
 
 ---
 
-## 🗂️ Arquitetura do Monorepo
-
-```text
-corpoAtivo/
-├── apps/
-│   ├── api/                    # API REST em Fastify + Prisma
-│   │   ├── prisma/             # Schema do banco e migrations
-│   │   └── src/
-│   │       ├── admin/          # Controllers, services e rotas do painel admin
-│   │       ├── auth/           # Autenticação JWT e middlewares RBAC
-│   │       ├── config/         # Variáveis de ambiente
-│   │       ├── payment/        # Módulo de pagamentos
-│   │       ├── subscription/   # Módulo de assinaturas
-│   │       ├── webhook/        # Estrutura preparada para webhooks (Asaas)
-│   │       ├── routes/         # Rotas públicas (planos e pré-matrícula)
-│   │       └── server.ts       # Entrypoint do servidor Fastify
-│   └── web/                    # Aplicação React + Vite
-│       ├── src/
-│       │   ├── features/       # Tipagens e módulos de domínio
-│       │   ├── pages/          # Landing Page e páginas do Dashboard Admin
-│       │   └── services/       # Cliente HTTP para consumo da API
-│       └── vercel.json         # Configuração de rewrite para SPA na Vercel
-└── package.json
-```
-
----
-
 ## 🗄️ Modelagem Principal de Dados
 
 | Entidade | Responsabilidade |
